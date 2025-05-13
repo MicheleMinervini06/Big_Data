@@ -1,0 +1,59 @@
+exp1:
+  id: 1
+  train: true
+  params:
+    epochs: 50
+    mb_size_train: 20
+    n_iteration: 50
+    frezze_layer: 2
+    mod: null
+
+exp2:
+  id: 2
+  train: true
+  params:
+    epochs: 50
+    mb_size_train: 20
+    n_iteration: 50
+    frezze_layer: 3
+    mod: null
+
+exp3:
+  id: 3
+  train: true
+  params:
+    epochs: 1
+    mb_size_train: 20
+    n_iteration: 1
+    frezze_layer: 2
+    mod: 'clinical'
+
+exp4:
+  id: 4
+  train: true
+  params:
+    epochs: 1
+    mb_size_train: 20
+    n_iteration: 1
+    frezze_layer: 2
+    mod: 'images'
+
+exp5:
+  id: 5
+  train: true
+  params:
+    epochs: 1
+    mb_size_train: 20
+    n_iteration: 1
+    frezze_layer: 2
+    mod: 'images'
+
+exp6:
+  id: 6
+  train: true
+  params: {}
+
+exp7:
+  id: 7
+  train: false
+  params: {}
