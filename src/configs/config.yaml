@@ -2,9 +2,9 @@ exp1:
   id: 1
   train: true
   params:
-    epochs: 50
+    epochs: 1
     mb_size_train: 20
-    n_iteration: 50
+    n_iteration: 1
     frezze_layer: 2
     mod: null
 

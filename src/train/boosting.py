@@ -3,17 +3,14 @@ from src.models.custom_base_estimators import VeroResNet, NeuralNetworkFitter, C
 from src.models.lutech_models import IRBoostSH
 import torch
 import numpy as np
-import mlflow
-
-
 
 
 def training_function(X_mods,y_train,fold,params):
 
-    epochs = params.get("EPOCHS",50)
-    mb_size_train = params.get("MB_SIZE_tRAIN",20)
-    n_iteration = params.get("N_ITERATION",10)
-    frezze_layer = params.get("FREZZE_LAYER",2)
+    epochs = params.get("epochs",50)
+    mb_size_train = params.get("mb_size_train",20)
+    n_iteration = params.get("n_iteration",10)
+    frezze_layer = params.get("frezze_layer",2)
     mod = params.get("mod",None)
 
     if params.get("id") == 6:

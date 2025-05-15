@@ -1,8 +1,14 @@
-LOCAL_DATA_DIR =  "src/data"
-IMAGE_FOLDER = LOCAL_DATA_DIR + "/images"
-LABELS_FILE = LOCAL_DATA_DIR + "/tables/ADNIMERGE_29Nov2024.csv"
-LEGEND_FILE = LOCAL_DATA_DIR + "/tabels/ADNI_T1_MPRAGE_12_17_2024.csv"
-IMG_PREFIX = "processed_MRI"
+from pathlib import Path
+
+# Punto alla root del progetto src/
+CONFIG_DIR = Path(__file__).parent
+DATA_DIR   = CONFIG_DIR.parent / "data"
+
+IMAGE_FOLDER = DATA_DIR / "images_post"
+LABELS_FILE  = DATA_DIR / "tables/ADNIMERGE_29Nov2024.csv"
+LEGEND_FILE  = DATA_DIR / "tables/ADNI_T1_MPRAGE_12_17_2024.csv"
+IMG_PREFIX = DATA_DIR / "images_pre"
+
 TEST_PERC = 0.2
 N_SPLITS = 5
 ADNI_WASTE = [

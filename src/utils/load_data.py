@@ -18,46 +18,76 @@ import pickle
 import nibabel as nib
 
 from minio.datatypes import Object
-from src.configs.config import IMAGE_FOLDER
+from src.configs.config import *
 
-#pd.set_option('future.no_silent_downcasting', True)
+pd.set_option('future.no_silent_downcasting', True)
 
 class ImagePreprocessor:
     """
-    Gestisce il caricamento e preprocessing delle immagini da cartella locale.
+    Gestisce il caricamento e preprocessing delle immagini:
+    - Legge file NIfTI da IMG_PREFIX
+    - Salva i tensor preprocessati in cache in IMAGE_FOLDER
     """
-    def __init__(self, img_input_size: tuple[int, int, int, int], legend: dict, cache_dir: Path = IMAGE_FOLDER):
+    def __init__(
+        self,
+        img_input_size: tuple[int, int, int, int],
+        legend: dict,
+    ):
         self.img_input_size = img_input_size
         self.legend = legend
-        self.cache_dir = cache_dir
+        # Directory di input (.nii) e di cache (.pkl)
+        self.input_dir = Path(IMG_PREFIX)
+        self.cache_dir = Path(IMAGE_FOLDER)
+        # Creazione directories se non esistono
+        self.input_dir.mkdir(parents=True, exist_ok=True)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
+        self.paths_df = None
 
-    def get_images_paths_df(self, image_folder: Path) -> pd.DataFrame:
+    def get_images_paths_df(self) -> pd.DataFrame:
         """
-        Scansiona la cartella locale per file .nii o simili,
-        li pre-processa e salva in cache come pickle.
+        Scansiona input_dir per file .nii*, preprocessa e salva in cache.
+        Restituisce DataFrame con campi: image_path, Patient ID, VISCODE.
         """
-        records = []
-        for nifti_path in image_folder.rglob("*.nii*"):
+        out_dict = {"image_path": [], "Patient ID": [], "VISCODE": []}
+        for nifti_path in self.input_dir.rglob("*.nii*"):
             key = nifti_path.stem
             cache_path = self.cache_dir / f"{key}.pkl"
+
             if not cache_path.exists():
                 img = self._load_nifti(nifti_path)
                 img_rs = self.reshape_img(img, self.img_input_size)
                 img_sc = self.min_max_scale_image(img_rs)
                 with open(cache_path, "wb") as f:
                     pickle.dump(img_sc, f)
-            # recupera ID paziente e VISCODE da legenda
-            id_idx = self.legend["Image Data ID"].index(key)
-            pid = self.legend["Subject"][id_idx]
-            vis = self.legend["Visit"][id_idx]
-            records.append({"image_path": str(cache_path), "Patient ID": pid, "VISCODE": vis})
-        return pd.DataFrame(records)
+            
+
+            parts = key.split("_")
+            suffix = parts[-1]
+
+
+            # Recupera Patient ID e VISCODE da legenda
+            id_idx = self.legend["Image Data ID"].index(suffix)
+            pid    = self.legend["Subject"][id_idx]
+            vis    = self.legend["Visit"][id_idx]
+
+            out_dict['image_path'].append(str(cache_path))
+            out_dict['Patient ID'].append(pid)
+            out_dict['VISCODE'].append(vis)
+
+            # records.append({
+            #     "image_path": str(cache_path),
+            #     "Patient ID": pid,
+            #     "VISCODE": vis,
+            # })
+        
+
+        out = pd.DataFrame(out_dict)
+        self.paths_df = out
+        return out
 
     def _load_nifti(self, path: Path) -> torch.Tensor:
         """Carica file NIfTI da disco e converte in tensor."""
-        
-        img = nib.load(str(path))
+        img = nib.load(str(path)) if hasattr(nib, 'load') else nib.load(str(path))
         arr = img.get_fdata()
         return torch.tensor(arr, dtype=torch.float32).unsqueeze(0)
 

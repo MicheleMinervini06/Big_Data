@@ -84,7 +84,7 @@ class NeuralNetworkFitter:
     def fit(self, data:pd.DataFrame, labels: pd.DataFrame, sample_weight:pd.Series): #Datframe, with weighted loss
 
         self.model.freeze_layers(freeze_level=self.inp_list.freeze_level)
-#        with mlflow():
+
         labels = torch.tensor(labels.values, dtype=torch.int64) - 1 #perchè cross entropy loss vuole da 0
         labels = labels.to(self.device)
         weights_tensor = torch.tensor(sample_weight.values, dtype=torch.float32).unsqueeze(1)
