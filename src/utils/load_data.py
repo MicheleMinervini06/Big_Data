@@ -13,14 +13,14 @@ from Crypto.SelfTest.Cipher.test_SIV import transform
 from minio import Minio
 import nibabel as nib
 from pathlib import Path
-from src.data.processing_data import IMAGE_FOLDER
 import os
 import pickle
 import nibabel as nib
 
 from minio.datatypes import Object
+from src.configs.config import IMAGE_FOLDER
 
-pd.set_option('future.no_silent_downcasting', True)
+#pd.set_option('future.no_silent_downcasting', True)
 
 class ImagePreprocessor:
     """

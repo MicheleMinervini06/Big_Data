@@ -2,20 +2,9 @@ from src.utils.load_data import ImagePreprocessor, retrieve_object_from_minio, t
 from sklearn.model_selection import train_test_split
 import pandas as pd
 from sklearn.model_selection import StratifiedKFold
+from src.configs.config import *
 
-LOCAL_DATA_DIR =  "src/data"
-IMAGE_FOLDER = LOCAL_DATA_DIR / "images"
-LABELS_FILE = LOCAL_DATA_DIR / "ADNIMERGE_29Nov2024.csv"
-LEGEND_FILE = LOCAL_DATA_DIR / "ADNI_T1_MPRAGE_12_17_2024.csv"
-IMG_PREFIX = "processed_MRI"
-TEST_PERC = 0.2
-N_SPLITS = 5
-ADNI_WASTE = [
-    "ABETA", "update_stamp", "TAU", "PTAU", "FSVERSION", "RID", "CDRSB", "EcoPtMem",
-    "EXAMDATE", "SITE", "COLPROT", "ORIGPROT", "PTETHCAT", 'PTRACCAT', "APOE4",
-    "FDG", "PIB", "AV45", "Hippocampus", "WholeBrain", "Enthorhinal", "Fusiform",
-    "MidTemp", "ICV", "M"
-]
+
 
 
 def processing_features_cv():

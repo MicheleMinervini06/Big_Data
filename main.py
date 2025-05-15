@@ -9,7 +9,7 @@ import argparse
 import yaml
 import numpy as np
 
-from src.data.processing_data import processing_features,processing_features_cv
+from src.data.processing_data import processing_features_cv
 from src.train.boosting import training_function
 from src.predict.evaluate_predict import evaluate
 from src.utils.save_load import *
@@ -26,13 +26,17 @@ def run_experiment(name: str, config: dict):
     params = config.get("params", {})
     
 
-    folds = processing_features_cv(**params)
-    #folds = None
+    #folds = processing_features_cv()
+    folds = [1,2,3]
     all_metrics = []
 
     for i, fold in enumerate(folds, start=1):
-        X_train, y_train = fold['X_train'], fold['y_train']
-        X_test, y_test = fold['X_test'], fold['y_test']
+        #X_train, y_train = fold['X_train'], fold['y_train']
+        #X_test, y_test = fold['X_test'], fold['y_test']
+        X_train = None
+        y_train = None
+        X_test = None
+        y_test = None
 
         if is_train:
             model = training_function(X_train, y_train, fold_index=i, **params)
