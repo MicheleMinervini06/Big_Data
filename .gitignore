@@ -8,8 +8,13 @@ __pycache__/
 /src/data/images_pre
 /src/data/images_post
 /src/data/tables
-
 /src/data/embed/
+
+# models
+/src/models/models_saved
+
+# utils
+/src/utils/minio_dowlaod.py
 
 # C extensions
 *.so
