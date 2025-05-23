@@ -112,12 +112,12 @@ veronet/
 
 | ID       | Description                                                            |
 | -------- | ---------------------------------------------------------------------- |
-| **exp1** | Full multimodal training with CNN frezzed layers. |
-| **exp2** | Full multimodal training without CNN frezzed layers.                                              |
+| **exp1** | Full multimodal training with CNN freezed layers. |
+| **exp2** | Full multimodal training without CNN freezed layers.                                    |
 | **exp3** | Clinical-only baseline.                                                |
-| **exp4** | Image-only baseline with CNN frezzed layers.                                                   |
-| **exp5** | Image-only baselin without CNN frezzed layers.                                 |
-| **exp6** | Random-Forest baseline.                                                |
+| **exp4** | Image-only baseline with CNN freezed layers.                                                   |
+| **exp5** | Image-only baselin without CNN freezed layers.                                 |
+| **exp6** | Full multimodal training with CNN embedding + RF predictor for images and RF for EHR.             |
 | **exp7** | Autoencoder (clinical) + CNN (images) concatenated for classification. |
 
 The active parameters (epochs, learning rate, batch size, etc.) for each experiment are defined in `src/configs/config.yaml`.
