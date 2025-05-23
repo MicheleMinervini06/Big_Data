@@ -2,39 +2,45 @@ from src.utils.load_data import ImagePreprocessor, retrieve_object_from_minio, t
 from sklearn.model_selection import train_test_split
 import pandas as pd
 from sklearn.model_selection import StratifiedKFold
-from sklearn.preprocessing import StandardScaler
 from src.configs.config import *
 
 
 def processing_feature():
-    # Scarica i dati da MinIO e posizionali in data/ (manuale)
-    labels_df = treat_labels(LABELS_FILE)
-    clinical_df = treat_clinical_data(LABELS_FILE, unwanted_cols=ADNI_WASTE, threshold=0.9)
-    legend = pd.read_csv(LEGEND_FILE, on_bad_lines='skip').to_dict(orient='list')
+    # 1) Carica label e dati clinici
+    df_labels   = treat_labels(LABELS_FILE)
+    print(f"[DEBUG] labels_df shape: {df_labels.shape}")
+    df_clinical = treat_clinical_data(LABELS_FILE, unwanted_cols=ADNI_WASTE, threshold=0.9)
+    print(f"[DEBUG] clinical_df shape: {df_clinical.shape}")
 
-    img_pre = ImagePreprocessor(img_input_size=(1,128,128,50), legend=legend)
-    paths_df = img_pre.get_images_paths_df(LOCAL_DATA_DIR / IMG_PREFIX)
+    # 2) Carica legenda
+    df_legend = pd.read_csv(LEGEND_FILE, on_bad_lines='skip')
+    legend = df_legend.to_dict(orient='list')
+    print(f"[DEBUG] legend keys: {list(legend.keys())}")
+    sample_id = legend['Image Data ID'][0]
+    print(f"[DEBUG] sample Image Data ID: {sample_id}")
 
-    df_merge = merge_modalities([clinical_df, paths_df], labels_df) # unisce dati clinici, path immagini e etichette in un unico dataFrame
-    df_merge = df_merge.drop(columns=['Patient ID', 'VISCODE'], errors='ignore').reset_index(drop=True) # rimuove eventuali colonne non utili ('Patient ID', 'VISCODE')
+    # 3) Pre-processore immagini
+    img_pre = ImagePreprocessor(
+        img_input_size=(1,128,128,50),
+        legend=legend
+    )
+    df_paths = img_pre.get_images_paths_df()
+    print(f"[DEBUG] paths_df shape: {df_paths.shape}")
+    print(f"[DEBUG] paths_df headD:{df_paths.head()}")
 
+    #Mergio le modalità in un unico dataset
+    # Merge modalities
+    df_merge = merge_modalities([df_clinical,df_paths],df_labels)
+    df_merge = df_merge.drop(columns=['Patient ID'])
+    df_merge = df_merge.drop(columns=['VISCODE'])
+    df_merge = df_merge.reset_index(drop=True)
 
-    # Prepare clinical columns
-    clinical_cols = [col for col in clinical_df.columns if col not in ['Patient ID', 'VISCODE']] # crea una lista di tutte le colonne che contengono solo i dati clinici (escludendo 'Patient ID'e'VISCODE')
-    print(f"\n✅ Colonne cliniche selezionate: {clinical_cols}")
-    print (f"\n Dimensione dati clinici: {len(clinical_cols)} ")
-    
-    # Imputazione NaN con la media
-    # df_merge[clinical_cols] = df_merge[clinical_cols].fillna(df_merge[clinical_cols].mean()) # sostituisce NaN nei dati clinici con la media della rispettiva colonna
-    df_merge[clinical_cols] = df_merge[clinical_cols].fillna(0)
-    
-    # Normalizzazione
-    scaler = StandardScaler() # porta tutte le feature cliniche su una scala comune (media 0, deviazione standard 1) --> (valore-media)/devstd
-    df_merge[clinical_cols] = scaler.fit_transform(df_merge[clinical_cols])
-
-
-    ## Train-test split
+    #train-test-split
     x_train, x_test = train_test_split(df_merge, test_size=TEST_PERC, random_state=42)
+
+    clinical_cols = df_clinical.columns.tolist()
+    clinical_cols.remove('Patient ID')
+    clinical_cols.remove('VISCODE')
 
     X_mod1_train = x_train[clinical_cols]
     X_mod3_train = x_train[["image_path"]]
@@ -45,11 +51,10 @@ def processing_feature():
     
 
     X_mods = {'clinical': X_mod1_train, 'images': X_mod3_train.dropna()}
-    X_test = {'clinical': X_mod1_test, 'images': X_mod3_test.dropna()}
+
+    X_test = {'clinical': X_mod1_test,  'images': X_mod3_test.dropna()}
     y_train = x_train["Label"]
-    print(f"y_train: {y_train.shape}")
     y_test = x_test["Label"]
-    print(f"y_test: {y_test.shape}")
 
     return X_mods,X_test,y_train,y_test
 
@@ -58,14 +63,14 @@ def processing_features_cv():
     # Scarica i dati da MinIO e posizionali in data/ (manuale)
     
     # 1) Carica label e dati clinici
-    labels_df   = treat_labels(LABELS_FILE)
-    print(f"[DEBUG] labels_df shape: {labels_df.shape}")
-    clinical_df = treat_clinical_data(LABELS_FILE, unwanted_cols=ADNI_WASTE, threshold=0.9)
-    print(f"[DEBUG] clinical_df shape: {clinical_df.shape}")
+    df_labels   = treat_labels(LABELS_FILE)
+    print(f"[DEBUG] labels_df shape: {df_labels.shape}")
+    df_clinical = treat_clinical_data(LABELS_FILE, unwanted_cols=ADNI_WASTE, threshold=0.9)
+    print(f"[DEBUG] clinical_df shape: {df_clinical.shape}")
 
     # 2) Carica legenda
-    legend_df = pd.read_csv(LEGEND_FILE, on_bad_lines='skip')
-    legend = legend_df.to_dict(orient='list')
+    df_legend = pd.read_csv(LEGEND_FILE, on_bad_lines='skip')
+    legend = df_legend.to_dict(orient='list')
     print(f"[DEBUG] legend keys: {list(legend.keys())}")
     sample_id = legend['Image Data ID'][0]
     print(f"[DEBUG] sample Image Data ID: {sample_id}")
@@ -75,31 +80,23 @@ def processing_features_cv():
         img_input_size=(1,128,128,50),
         legend=legend
     )
-    paths_df = img_pre.get_images_paths_df()
-    print(f"[DEBUG] paths_df shape: {paths_df.shape}")
-    print(f"[DEBUG] paths_df headD:{paths_df.head()}")
+    df_paths = img_pre.get_images_paths_df()
+    #Mergio le modalità in un unico dataset
+    # Merge modalities
+    df_merge = merge_modalities([df_clinical,df_paths],df_labels)
+    df_merge = df_merge.drop(columns=['Patient ID'])
+    df_merge = df_merge.drop(columns=['VISCODE'])
+    df_merge = df_merge.reset_index(drop=True)
 
-    merged = merge_modalities([clinical_df, paths_df], labels_df)
-    print(f"[DEBUG] merged shape before drop: {merged.shape}")
-    merged = merged.drop(columns=['Patient ID','VISCODE'], errors='ignore').reset_index(drop=True)
-    print(f"[DEBUG] merged shape after drop: {merged.shape}")
-    print(f"[DEBUG] merged head:{merged.head()}")
-
-    clinical_cols = [col for col in clinical_df.columns if col not in ['Patient ID', 'VISCODE']] # crea una lista di tutte le colonne che contengono solo i dati clinici (escludendo 'Patient ID'e'VISCODE')
-    print(f"\n✅ Colonne cliniche selezionate: {clinical_cols}")
-    print (f"\n Dimensione dati clinici: {len(clinical_cols)} ")
-
-    merged[clinical_cols] = merged[clinical_cols].fillna(0)
-
-    # Normalizzazione
-    scaler = StandardScaler() # porta tutte le feature cliniche su una scala comune (media 0, deviazione standard 1) --> (valore-media)/devstd
-    merged[clinical_cols] = scaler.fit_transform(merged[clinical_cols])
+    clinical_cols = df_clinical.columns.tolist()
+    clinical_cols.remove('Patient ID')
+    clinical_cols.remove('VISCODE')
 
     skf = StratifiedKFold(n_splits=N_SPLITS, shuffle=True, random_state=42)
     folds = []
-    for fold_idx, (train_idx, test_idx) in enumerate(skf.split(merged, merged["Label"])):
-        train_df = merged.loc[train_idx].reset_index(drop=True)
-        test_df = merged.loc[test_idx].reset_index(drop=True)
+    for fold_idx, (train_idx, test_idx) in enumerate(skf.split(df_merge, df_merge["Label"])):
+        train_df = df_merge.loc[train_idx].reset_index(drop=True)
+        test_df = df_merge.loc[test_idx].reset_index(drop=True)
 
         fold_data = {
             'X_train': {
