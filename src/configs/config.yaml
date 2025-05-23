@@ -2,9 +2,9 @@ exp1:
   id: 1
   train: true
   params:
-    epochs: 1
+    epochs: 50
     mb_size_train: 20
-    n_iteration: 1
+    n_iteration: 10
     frezze_layer: 2
     mod: null
 
@@ -14,7 +14,7 @@ exp2:
   params:
     epochs: 50
     mb_size_train: 20
-    n_iteration: 50
+    n_iteration: 10
     frezze_layer: 3
     mod: null
 
@@ -32,7 +32,7 @@ exp4:
   id: 4
   train: true
   params:
-    epochs: 1
+    epochs: 50
     mb_size_train: 20
     n_iteration: 1
     frezze_layer: 2
@@ -42,16 +42,21 @@ exp5:
   id: 5
   train: true
   params:
-    epochs: 1
+    epochs: 50
     mb_size_train: 20
     n_iteration: 1
-    frezze_layer: 2
+    frezze_layer: 3
     mod: 'images'
 
 exp6:
   id: 6
   train: true
-  params: {}
+  params:
+    epochs: 50
+    mb_size_train: 20
+    n_iteration: 10
+    frezze_layer: 2
+    mod: null
 
 exp7:
   id: 7
