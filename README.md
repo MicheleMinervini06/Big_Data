@@ -22,14 +22,12 @@ In the src/data folder, create the following folders:
 src/
 ├── data/
 │   ├── embed/             # Cached image embeddings
-|   |-─ images_pre/        # Raw images
-|   |-─ images_post/       # Processed images
+|   |-─ images_pre/        # Raw images (.nii)
+|   |-─ images_post/       # Processed images (.pkl)
 |   └── tables/            # Clinical CSVs & legends
 ```
 
-Then, download the data from  and place it in the appropriate folders.
-
-
+Then, download the data and place it in the appropriate folders.
 
 
 ### 2.1 Create & activate a virtual environment
@@ -103,7 +101,7 @@ veronet/
 │   │   └── boosting.py        # Training logic for multimodal boosting
 │   └── utils/
 │       ├── save_load.py       # Model I/O helpers
-│       ├── load_data.py       # NIfTI + clinical ingestion
+│       └── load_data.py       # NIfTI + clinical ingestion
 |
 └── requirements.txt
 ```
