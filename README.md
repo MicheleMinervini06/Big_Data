@@ -142,11 +142,7 @@ python main.py exp7       # AE + CNN multimodal pipeline
 deactivate
 ```
 
----
 
-### Support
-
-Please open an issue or submit a pull request if you hit any problems or have suggestions to improve the project.
 
 
 
