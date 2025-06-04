@@ -1,4 +1,4 @@
-# Veronet Project
+# Veroneca Project
 
 A multimodal deep-learning framework for medical image analysis that combines clinical data, 3D image embeddings, and boosting-based classifiers.
 
@@ -37,7 +37,7 @@ Then, download the data and place it in the appropriate folders.
 
 ```powershell
 # From the repository root
-cd \path\to\veronet_paper
+cd \path\to\veroneca
 
 python -m venv .venv          # Create the venv
 .\.venv\Scripts\Activate.ps1  # Activate it
@@ -50,7 +50,7 @@ python -m venv .venv          # Create the venv
 
 ```bash
 # From the repository root
-cd /path/to/veronet_paper
+cd /path/to/veroneca
 
 python3 -m venv .venv         # Create the venv
 source .venv/bin/activate     # Activate it
@@ -77,7 +77,7 @@ Feel free to copy the file and tweak epochs, learning rates, paths, or experimen
 ## 4  Project Layout
 
 ```text
-veronet/
+veroneca/
 ├── main.py                    # CLI entry-point to launch experiments
 ├── run_experiments.py         # Orchestrates training and evaluation loops
 ├── src/
