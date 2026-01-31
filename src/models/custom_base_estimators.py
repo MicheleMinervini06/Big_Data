@@ -20,22 +20,98 @@ class VeroResNet(nn.Module):
         self.num_classes = num_classes
         self.res = monai.networks.nets.resnet18(spatial_dims = 3, n_input_channels=1, num_classes = 3, pretrained=True, feed_forward = False, bias_downsample = True, shortcut_type="A")
         self.fc1 = nn.Linear(in_features=512, out_features=512)
-        # self.dropout = nn.Dropout(p=0.15)
+        self.dropout1 = nn.Dropout(p=0.5)  # MC Dropout layer 1
 
         self.fc2 = nn.Linear(in_features=512, out_features=256)
+        self.dropout2 = nn.Dropout(p=0.5)  # MC Dropout layer 2
 
         self.out_layer = nn.Linear(in_features=256, out_features=num_classes)
 
-    def forward(self, x: torch.Tensor):
+    def forward(self, x: torch.Tensor, dropout_enabled=False):
+        """
+        Forward pass with optional dropout control.
+        
+        Args:
+            x: Input tensor
+            dropout_enabled: If True, apply dropout (for MC sampling). If False, standard inference.
+        """
         x = self.res(x)
         x = self.fc1(x)
         x = torch.nn.functional.relu(x)
-        #x = self.dropout(x)
+        if dropout_enabled:
+            x = self.dropout1(x)
         x = self.fc2(x)
         x = torch.nn.functional.relu(x)
-        #x = self.dropout(x)
-        x =self.out_layer(x)
+        if dropout_enabled:
+            x = self.dropout2(x)
+        x = self.out_layer(x)
         return x
+    
+    def forward_mcdo(self, x: torch.Tensor, n_mc_samples=25):
+        """
+        Monte Carlo Dropout forward pass for uncertainty quantification.
+        
+        Args:
+            x: Input tensor
+            n_mc_samples: Number of MC forward passes (default: 25)
+            
+        Returns:
+            predictions_mc: Stacked predictions [n_mc_samples, batch_size, num_classes]
+        """
+        # Store original training state
+        was_training = self.training
+        
+        # Enable dropout in eval mode
+        self.eval()
+        
+        predictions_mc = []
+        with torch.no_grad():
+            for _ in range(n_mc_samples):
+                # Forward pass with dropout enabled
+                logits = self.forward(x, dropout_enabled=True)
+                predictions_mc.append(logits)
+        
+        # Restore original training state
+        self.train(was_training)
+        
+        # Stack predictions: [n_mc_samples, batch_size, num_classes]
+        return torch.stack(predictions_mc, dim=0)
+    
+    @staticmethod
+    def compute_uncertainty_from_mcdo(predictions_mc):
+        """
+        Compute uncertainty metrics from MC Dropout predictions.
+        
+        Args:
+            predictions_mc: Tensor of shape [n_mc_samples, batch_size, num_classes]
+            
+        Returns:
+            dict with:
+                - mean_logits: Mean predictions [batch_size, num_classes]
+                - var_logits: Variance of logits [batch_size, num_classes]
+                - confidence: Max probability after softmax [batch_size]
+                - epistemic_uncertainty: Mean variance across classes [batch_size]
+                - predicted_class: Predicted class indices [batch_size]
+        """
+        # Mean and variance of logits
+        mean_logits = predictions_mc.mean(dim=0)  # [batch_size, num_classes]
+        var_logits = predictions_mc.var(dim=0)    # [batch_size, num_classes]
+        
+        # Confidence: max probability from mean prediction
+        probs = torch.softmax(mean_logits, dim=-1)
+        confidence, predicted_class = probs.max(dim=-1)
+        
+        # Epistemic uncertainty: mean variance across classes
+        epistemic_uncertainty = var_logits.mean(dim=-1)  # [batch_size]
+        
+        return {
+            'mean_logits': mean_logits,
+            'var_logits': var_logits,
+            'confidence': confidence,
+            'epistemic_uncertainty': epistemic_uncertainty,
+            'predicted_class': predicted_class,
+            'mean_probs': probs
+        }
 
 
     def freeze_layers(self, freeze_level):
@@ -134,9 +210,57 @@ class NeuralNetworkFitter:
                 x_df = nifti_df_from_local(paths_df=x)
                 x_mb = dataframe_to_tensor(x_df)
                 x_mb = x_mb.to(self.device)
-                outputs=self.model.forward(x_mb)
+                outputs=self.model.forward(x_mb, dropout_enabled=False)
                 predicts = torch.cat([predicts,torch.softmax(outputs, dim=-1)], dim=0)
         return predicts[1:]
+    
+    def predict_proba_mcdo(self, data: pd.DataFrame, n_mc_samples=25, mb_size=2):
+        """
+        Predict probabilities using Monte Carlo Dropout for uncertainty quantification.
+        
+        Args:
+            data: DataFrame with image paths
+            n_mc_samples: Number of MC forward passes (default: 25)
+            mb_size: Mini-batch size for processing
+            
+        Returns:
+            Dictionary with:
+                - mean_probs: Mean predicted probabilities [batch_size, num_classes]
+                - confidence: Confidence scores [batch_size]
+                - epistemic_uncertainty: Epistemic uncertainty [batch_size]
+                - predicted_class: Predicted classes [batch_size]
+        """
+        self.model.eval()
+        
+        all_mean_probs = []
+        all_confidence = []
+        all_epistemic = []
+        all_predicted_class = []
+        
+        for mb in range(0, len(data), mb_size):
+            x = data[mb: mb+mb_size]
+            x_df = nifti_df_from_local(paths_df=x)
+            x_mb = dataframe_to_tensor(x_df)
+            x_mb = x_mb.to(self.device)
+            
+            # MC Dropout forward pass
+            predictions_mc = self.model.forward_mcdo(x_mb, n_mc_samples=n_mc_samples)
+            
+            # Compute uncertainty metrics
+            uncertainty_dict = self.model.compute_uncertainty_from_mcdo(predictions_mc)
+            
+            all_mean_probs.append(uncertainty_dict['mean_probs'])
+            all_confidence.append(uncertainty_dict['confidence'])
+            all_epistemic.append(uncertainty_dict['epistemic_uncertainty'])
+            all_predicted_class.append(uncertainty_dict['predicted_class'])
+        
+        # Concatenate all batches
+        return {
+            'mean_probs': torch.cat(all_mean_probs, dim=0),
+            'confidence': torch.cat(all_confidence, dim=0),
+            'epistemic_uncertainty': torch.cat(all_epistemic, dim=0),
+            'predicted_class': torch.cat(all_predicted_class, dim=0)
+        }
 
 @dataclass()
 class ImageRFFitterInput:
