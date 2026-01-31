@@ -45,41 +45,71 @@ class ImagePreprocessor:
 
     def get_images_paths_df(self) -> pd.DataFrame:
         """
-        Scansiona input_dir per file .nii*, preprocessa e salva in cache.
+        Scansiona cache_dir per file .pkl già processati.
         Restituisce DataFrame con campi: image_path, Patient ID, VISCODE.
         """
         out_dict = {"image_path": [], "Patient ID": [], "VISCODE": []}
-        for nifti_path in self.input_dir.rglob("*.nii*"):
-            key = nifti_path.stem
-            cache_path = self.cache_dir / f"{key}.pkl"
-
-            if not cache_path.exists():
-                img = self._load_nifti(nifti_path)
-                img_rs = self.reshape_img(img, self.img_input_size)
-                img_sc = self.min_max_scale_image(img_rs)
-                with open(cache_path, "wb") as f:
-                    pickle.dump(img_sc, f)
-            
-
-            parts = key.split("_")
-            suffix = parts[-1]
-
-
-            # Recupera Patient ID e VISCODE da legenda
-            id_idx = self.legend["Image Data ID"].index(suffix)
-            pid    = self.legend["Subject"][id_idx]
-            vis    = self.legend["Visit"][id_idx]
-
-            out_dict['image_path'].append(str(cache_path))
-            out_dict['Patient ID'].append(pid)
-            out_dict['VISCODE'].append(vis)
-
-            # records.append({
-            #     "image_path": str(cache_path),
-            #     "Patient ID": pid,
-            #     "VISCODE": vis,
-            # })
         
+        # Prima cerca file pkl già processati nella cache
+        pkl_files = list(self.cache_dir.rglob("processed_*.pkl"))
+        
+        if pkl_files:
+            # Usa i pkl già processati
+            for pkl_path in pkl_files:
+                key = pkl_path.stem  # es: processed_002_S_0619_I57662
+                # Estrai IMAGEUID dal nome file
+                if "_I" in key:
+                    parts = key.split("_I")
+                    ptid = parts[0].replace("processed_", "")
+                    imageuid_str = parts[1]
+                    try:
+                        imageuid = int(imageuid_str)
+                    except ValueError:
+                        continue
+                    
+                    # Cerca nella legenda
+                    try:
+                        id_idx = self.legend["Image Data ID"].index(imageuid)
+                        pid = self.legend["Subject"][id_idx]
+                        vis = self.legend.get("Visit", [None] * len(self.legend["Image Data ID"]))[id_idx]
+                        if vis is None:
+                            vis = "bl"  # default baseline
+                        
+                        out_dict['image_path'].append(str(pkl_path))
+                        out_dict['Patient ID'].append(pid)
+                        out_dict['VISCODE'].append(vis)
+                    except (ValueError, IndexError):
+                        # Skip se non trovato in legenda
+                        continue
+        else:
+            # Altrimenti cerca file nifti da preprocessare
+            for nifti_path in self.input_dir.rglob("*.nii*"):
+                key = nifti_path.stem
+                cache_path = self.cache_dir / f"{key}.pkl"
+
+                if not cache_path.exists():
+                    img = self._load_nifti(nifti_path)
+                    img_rs = self.reshape_img(img, self.img_input_size)
+                    img_sc = self.min_max_scale_image(img_rs)
+                    with open(cache_path, "wb") as f:
+                        pickle.dump(img_sc, f)
+                
+                parts = key.split("_")
+                suffix = parts[-1]
+
+                # Recupera Patient ID e VISCODE da legenda
+                try:
+                    id_idx = self.legend["Image Data ID"].index(suffix)
+                    pid = self.legend["Subject"][id_idx]
+                    vis = self.legend.get("Visit", [None] * len(self.legend["Image Data ID"]))[id_idx]
+                    if vis is None:
+                        vis = "bl"
+
+                    out_dict['image_path'].append(str(cache_path))
+                    out_dict['Patient ID'].append(pid)
+                    out_dict['VISCODE'].append(vis)
+                except (ValueError, IndexError):
+                    continue
 
         out = pd.DataFrame(out_dict)
         self.paths_df = out
