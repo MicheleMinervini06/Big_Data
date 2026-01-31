@@ -1,0 +1,21 @@
+# EHR_CATEGORIES = {"socio_ambientali": ["AGE", "PTGENDER", "PTEDUCAT", "PTETHCAT", 
+#                                        "PTRACCAT", "PTMARRY"],
+#                     "psicologiche": ["CDRSB", "ADAS11", "ADAS13", "ADASQ4", "MMSE", 
+#                                      "RAVLT_imm", "RAVLT_forg", "RAVLT_perc_forg", 
+#                                      "LDELTOTAL", "DIGITSCOR", "TRABSCOR", "FAQ", 
+#                                      "MOCA", "ECOGPTMEM", "ECOGPTLANG", "ECOGPTPLAN", 
+#                                      "ECOGPTORGAN", "ECOGSPTTOTAL", "ECOGPTVISSPAT", 
+#                                      "ECOGSPMEM", "ECOGSPLANG", "ECOGSPVISSAT", 
+#                                      "ECOGSPPLAN", "ECOGSPORGAN", "ECOGSPDIVATT", 
+#                                      "ECOGSPTOTAL", "mPACCdigit", "mPACCtrailsB"],
+#                     "PET": ["FDG", "PIB", "AV45", "FBB"],
+#                     "MRI":["Ventricles", "Hippocampus", "WholeBrain", "Entorhinal", 
+#                            "Fusiform", "MidTemp", "ICV"]}
+
+
+# ADNI_WASTE = [
+#     "ABETA", "update_stamp", "TAU", "PTAU", "FSVERSION", "RID", "CDRSB", "EcoPtMem",
+#     "EXAMDATE", "SITE", "COLPROT", "ORIGPROT", "PTETHCAT", 'PTRACCAT', "APOE4",
+#     "FDG", "PIB", "AV45", "Hippocampus", "WholeBrain", "Enthorhinal", "Fusiform",
+#     "MidTemp", "ICV", "M"
+# ]
