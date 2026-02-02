@@ -209,7 +209,7 @@ class NeuralNetworkFitter:
                 if len(outputs.shape)<2:
                     outputs = outputs.unsqueeze(0)
                 loss = self.criterion(outputs, y_mb)
-                loss = (weights_mb * loss).sum()
+                loss = (weights_mb * loss).mean()
                 losses.append(loss.item())
                 loss.backward()
                 self.optimizer.step()
