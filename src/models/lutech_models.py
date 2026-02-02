@@ -74,29 +74,22 @@ class BoostSH(BaseEstimator, ClassifierMixin):
             selected = {'max_edge': -np.inf}
             for m in self.modalities:
                 mask = self.modalities[m].index.tolist()
-                # Use MC Dropout for 'images' modality to get confidence
-                use_mcdo = False  # (m == 'images')  # DISABLED for baseline test
-                weak_forecast = self.__compute_weak_forecast__(m, self.modalities[m], y[mask], self.weights[mask], forecast_cv, True, use_mcdo=use_mcdo)
+                weak_forecast = self.__compute_weak_forecast__(m, self.modalities[m], y[mask], self.weights[mask], forecast_cv, True, use_mcdo=False)
 
                 tmp = 2 * ((weak_forecast['forecast'] == y[mask].values) - .5)
-                edge_raw = (self.weights[mask].values * tmp).sum()
+                edge = (self.weights[mask].values * tmp).sum()
                 
-                # Confidence-weighted edge
-                mean_confidence = weak_forecast['confidence'].mean()
-                edge = edge_raw * mean_confidence
-                
-                print(f'Modality {m}: raw_edge={edge_raw:.4f}, mean_confidence={mean_confidence:.4f}, weighted_edge={edge:.4f}')
+                print(f'Modality {m}: edge={edge:.4f}')
 
                 if edge > selected['max_edge']:
-                    selected = {'max_edge': edge, 'raw_edge': edge_raw, 'mean_confidence': mean_confidence,
+                    selected = {'max_edge': edge,
                                 'modality': m, 'forecast': weak_forecast['forecast'], 'mask': mask,
-                                'model': weak_forecast['model'], 'tmp': tmp, 'confidence': weak_forecast['confidence']}
+                                'model': weak_forecast['model'], 'tmp': tmp}
 
-            if (1 - selected['raw_edge']) < self.eps:
+            if (1 - selected['max_edge']) < self.eps:
                 alpha = self.learning_rate * .5 * 10.
             else:
-                # Use raw edge for alpha calculation to maintain boosting theory
-                alpha = self.learning_rate * .5 * np.log((1 + selected['raw_edge']) / (1 - selected['raw_edge']))
+                alpha = self.learning_rate * .5 * np.log((1 + selected['max_edge']) / (1 - selected['max_edge']))
 
             # Update weights
             self.weights[selected['mask']] *= np.exp(- alpha * selected['tmp'])
@@ -107,8 +100,7 @@ class BoostSH(BaseEstimator, ClassifierMixin):
 
             print('Boost.SH iteration ', t)
             print('Winning modality ', selected['modality'])
-            print('Weighted Edge ', selected['max_edge'])
-            print(f'Raw Edge: {selected["raw_edge"]:.4f}, Mean Confidence: {selected["mean_confidence"]:.4f}')
+            print('Edge ', selected['max_edge'])
             print('')
 
         return
@@ -203,6 +195,91 @@ class BoostSH(BaseEstimator, ClassifierMixin):
         assert len(self.models) > 0, 'Model not trained'
         pp = self.predict_proba(X).idxmax(axis=1)
         return pp
+    
+    def predict_with_mcdo(self, X, n_mc_samples=25):
+        """
+        Predict with MC Dropout for uncertainty quantification (TEST ONLY).
+        Optimized to load data once per modality.
+        
+        Args:
+            X: dict of modality data
+            n_mc_samples: number of MC samples
+            
+        Returns:
+            dict with 'predictions', 'confidence', 'epistemic_uncertainty'
+        """
+        self.check_X(X)
+        assert len(self.models) > 0, 'Model not trained'
+        
+        index = self.__index_union__(X)
+        
+        # Collect MC samples
+        mc_predictions = []
+        for mc_iter in range(n_mc_samples):
+            np.random.seed(42 + mc_iter)  # For reproducibility
+
+            if mc_iter % 5 == 0:
+                print(f"MC Dropout iteration {mc_iter+1}/{n_mc_samples}...")
+            
+            predictions = pd.DataFrame(0., index=index, columns=self.classes)
+            
+            for t in range(len(self.models)):
+                if self.modalities_selected[t] in X.keys():
+                    X_test = X[self.modalities_selected[t]]
+                    test_index = X_test.index
+                    
+                    # Use MC Dropout for NeuralNetworkFitter, tree subsampling for RandomForest
+                    if hasattr(self.models[t], 'predict_proba_with_dropout'):
+                        # CNN with MC Dropout
+                        probas = self.models[t].predict_proba_with_dropout(X_test)
+                    elif self.models[t].__class__.__name__ == 'RandomForestClassifier':
+                        # Random Forest: subsample 70% of trees randomly (like dropout p=0.3)
+                        n_trees = len(self.models[t].estimators_)
+                        n_sample = int(0.7 * n_trees)  # Use 70% of trees
+                        sampled_indices = np.random.choice(n_trees, size=n_sample, replace=False)
+                        sampled_trees = [self.models[t].estimators_[i] for i in sampled_indices]
+                        
+                        # Convert DataFrame to numpy to avoid sklearn warning
+                        X_test_np = X_test.values if isinstance(X_test, pd.DataFrame) else X_test
+                        
+                        # Average predictions from sampled trees
+                        tree_predictions = np.array([tree.predict_proba(X_test_np) for tree in sampled_trees])
+                        probas = tree_predictions.mean(axis=0)
+                    else:
+                        probas = self.models[t].predict_proba(X_test)
+                    
+                    probas = probas.detach().cpu().numpy() if not isinstance(probas, np.ndarray) else probas
+                    
+                    for i, idx in enumerate(test_index):
+                        predictions.loc[idx] += float(self.alphas[t]) * probas[i]
+            
+            # Normalize
+            predictions_normalized = predictions.div(predictions.sum(axis=1), axis=0).fillna(0)
+            mc_predictions.append(predictions_normalized.values)
+        
+        # Stack MC samples: [n_mc_samples, n_samples, n_classes]
+        mc_predictions = np.stack(mc_predictions, axis=0)
+        
+        # Mean prediction
+        mean_probs = mc_predictions.mean(axis=0)
+        
+        # Confidence (max probability)
+        confidence = mean_probs.max(axis=1)
+        
+        # Epistemic uncertainty (std of max probability across MC samples)
+        max_probs_per_sample = mc_predictions.max(axis=2)  # [n_mc_samples, n_samples]
+        epistemic_uncertainty = max_probs_per_sample.std(axis=0)  # [n_samples]
+        # var_probs = mc_predictions.var(axis=0)
+        # epistemic_uncertainty = var_probs.mean(axis=1)
+        
+        # Final predictions
+        final_predictions = pd.Series(self.classes[mean_probs.argmax(axis=1)], index=index)
+        
+        return {
+            'predictions': final_predictions,
+            'confidence': pd.Series(confidence, index=index),
+            'epistemic_uncertainty': pd.Series(epistemic_uncertainty, index=index)
+        }
 
     def check_input(self, X, y):
         self.check_X(X)
@@ -296,9 +373,7 @@ class IRBoostSH(BoostSH):
             print(f'Winning modality: {selected_mod}.')
         
             mask = self.modalities[selected_mod].index.tolist()
-            # Use MC Dropout for 'images' modality to get confidence
-            use_mcdo = False  # (selected_mod == 'images')  # DISABLED for baseline test
-            weak_forecast = self.__compute_weak_forecast__(selected_mod, self.modalities[selected_mod], y[mask], self.weights[mask], use_mcdo=use_mcdo)
+            weak_forecast = self.__compute_weak_forecast__(selected_mod, self.modalities[selected_mod], y[mask], self.weights[mask], use_mcdo=False)
             
             # Handle different return types from predict()
             if isinstance(weak_forecast['forecast'], pd.DataFrame):
@@ -319,26 +394,25 @@ class IRBoostSH(BoostSH):
             ## Use this for python version <= 3.11
             # tmp = 2 * ((weak_forecast['forecast'] == y[mask].values) - .5)
 
-            edge_raw = (self.weights[mask].values * tmp).sum()
+            edge = (self.weights[mask].values * tmp).sum()
             
-            # Confidence-weighted edge for images modality
-            mean_confidence = weak_forecast['confidence'].mean()
-            edge = edge_raw * mean_confidence
-            
-            print(f'Raw edge: {edge_raw:.4f}, Mean confidence: {mean_confidence:.4f}, Weighted edge: {edge:.4f}')
+            print(f'Edge: {edge:.4f}')
 
-            if (1 - edge_raw) < self.eps:
+            if (1 - edge) < self.eps:
                 alpha = self.learning_rate * .5 * 10.
-            elif edge_raw <= 0:
+            elif edge <= 0:
                 alpha = 0
             else:
-                # Use raw edge for alpha calculation to maintain boosting theory
-                alpha = self.learning_rate * .5 * np.log((1 + edge_raw) / (1 - edge_raw))
+                alpha = self.learning_rate * .5 * np.log((1 + edge) / (1 - edge))
 
             # Update weights
             self.weights[mask] *= np.exp(- alpha * tmp)
+            
+            # Normalize weights to prevent underflow
+            self.weights /= self.weights.sum()
+            self.weights *= len(self.weights)  # Scale back to original magnitude
 
-            # Update arm probability (use weighted edge for bandit reward)
+            # Update arm probability
             r_mods = pd.Series(0., index=possible_modalities)
             square = np.sqrt(1 - edge ** 2) if edge < 1 else 0
             r_mods[selected_mod] = (1 - square) / q_mods[selected_mod]
@@ -352,7 +426,7 @@ class IRBoostSH(BoostSH):
             print('')
             print('Iteration ', t)
             print('Winning modality ', selected_mod)
-            print(f'Weighted Edge: {edge:.4f} (raw: {edge_raw:.4f}, confidence: {mean_confidence:.4f})')
+            print(f'Edge: {edge:.4f}')
             print(f'Alpha {alpha}')
 
         return

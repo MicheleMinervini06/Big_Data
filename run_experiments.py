@@ -19,7 +19,12 @@ def run_boosting(name: str, config: dict):
     print(f"\n=== Running {name} ===")
     is_train = config.get("train", True)
     params = config.get("params", {})
+    use_mcdo = params.get("use_mcdo", False)  # MC Dropout per test
+    reuse_from = config.get("reuse_from", None)  # Riusa modelli già addestrati
     
+    if reuse_from:
+        print(f"Reusing models from '{reuse_from}' (skip training)")
+        is_train = False
 
     folds = processing_features_cv()
     
@@ -33,9 +38,11 @@ def run_boosting(name: str, config: dict):
         if is_train:
             model = training_function(X_train, y_train, i, params)
         else:
-            model = load_model(model_name=f"{name}_fold_{i}")
+            # Carica da reuse_from se specificato, altrimenti da name
+            model_source = reuse_from if reuse_from else name
+            model = load_model(model_name=f"{model_source}_fold_{i}")
 
-        metrics = evaluate(model, X_train, X_test, y_train, y_test, fold=i)
+        metrics = evaluate(model, X_train, X_test, y_train, y_test, fold=i, use_mcdo=use_mcdo)
         all_metrics.append(metrics)
 
         if is_train:
@@ -45,11 +52,16 @@ def run_boosting(name: str, config: dict):
         if torch.cuda.is_available():
             print(f"Fold {i} - PRE Cleanup - CUDA Allocated: {torch.cuda.memory_allocated()/(1024*1024):.2f} MB")
 
-        # Pulizia: sposta su CPU, libera memoria e cache
-        try:
-            model.cpu()
-        except Exception:
-            pass
+        # Pulizia sicura: sposta weak learner GPU su CPU
+        if hasattr(model, 'models'):
+            for weak_model in model.models:
+                try:
+                    # Solo NeuralNetworkFitter ha .model (ResNet)
+                    if hasattr(weak_model, 'model') and hasattr(weak_model.model, 'cpu'):
+                        weak_model.model.cpu()
+                except Exception:
+                    pass  # Ignora errori, continua con altri modelli
+        
         del model
         gc.collect()
         if torch.cuda.is_available():
@@ -69,6 +81,13 @@ def run_boosting(name: str, config: dict):
     print("\nAverage metrics across folds:")
     for k, v in avg_metrics.items():
         print(f"{k}: {v:.4f}")
+    
+    # Calcola metriche MC Dropout se disponibili
+    if use_mcdo and all('confidence' in m for m in all_metrics):
+        avg_confidence = np.mean([m['confidence'] for m in all_metrics])
+        avg_epistemic = np.mean([m['epistemic_uncertainty'] for m in all_metrics])
+        print(f"mean_confidence: {avg_confidence:.4f}")
+        print(f"mean_epistemic_uncertainty: {avg_epistemic:.4f}")
 
 
 def run_autoencoder():

@@ -168,9 +168,13 @@ def merge_modalities(different_modalities_dfs: list, labels_df: pd.DataFrame):
 def nifti_df_from_local(paths_df: pd.DataFrame):
     imgs_list = []
     for obj in paths_df["image_path"]:
-        with open(obj, "rb") as fh:
-            pp = pickle.load(fh)
-            imgs_list.append(pp)
+        try:
+            with open(obj, "rb") as fh:
+                pp = pickle.load(fh)
+                imgs_list.append(pp)
+        except Exception as e:
+            print(f"Error loading pickle file {obj}: {e}")
+            raise
     out_df = pd.DataFrame({"images": imgs_list})
     return out_df
 

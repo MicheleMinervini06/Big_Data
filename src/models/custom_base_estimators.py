@@ -27,25 +27,53 @@ class VeroResNet(nn.Module):
 
         self.out_layer = nn.Linear(in_features=256, out_features=num_classes)
 
-    def forward(self, x: torch.Tensor, dropout_enabled=False):
+    def forward(self, x: torch.Tensor):
         """
-        Forward pass with optional dropout control.
+        Standard forward pass without dropout (for normal inference).
         
         Args:
             x: Input tensor
-            dropout_enabled: If True, apply dropout (for MC sampling). If False, standard inference.
         """
         x = self.res(x)
         x = self.fc1(x)
         x = torch.nn.functional.relu(x)
-        if dropout_enabled:
-            x = self.dropout1(x)
+        x = self.dropout1(x)  # Dropout applicato SOLO se layer in train mode
         x = self.fc2(x)
         x = torch.nn.functional.relu(x)
-        if dropout_enabled:
-            x = self.dropout2(x)
+        x = self.dropout2(x)  # Dropout applicato SOLO se layer in train mode
         x = self.out_layer(x)
         return x
+    
+    def _forward_single_with_dropout(self, x: torch.Tensor):
+        """
+        Single forward pass with dropout enabled (for MC Dropout sampling).
+        Private method - use predict_proba_with_dropout at higher level.
+        
+        Args:
+            x: Input tensor
+            
+        Returns:
+            Output logits with dropout applied
+        """
+        # Enable dropout temporarily
+        self.dropout1.train()
+        self.dropout2.train()
+        
+        # Forward pass (WITHOUT no_grad to allow dropout to work properly)
+        x_out = self.res(x)
+        x_out = self.fc1(x_out)
+        x_out = torch.nn.functional.relu(x_out)
+        x_out = self.dropout1(x_out)
+        x_out = self.fc2(x_out)
+        x_out = torch.nn.functional.relu(x_out)
+        x_out = self.dropout2(x_out)
+        output = self.out_layer(x_out)
+        
+        # Restore eval mode
+        self.dropout1.eval()
+        self.dropout2.eval()
+        
+        return output
     
     def forward_mcdo(self, x: torch.Tensor, n_mc_samples=25):
         """
@@ -68,7 +96,7 @@ class VeroResNet(nn.Module):
         with torch.no_grad():
             for _ in range(n_mc_samples):
                 # Forward pass with dropout enabled
-                logits = self.forward(x, dropout_enabled=True)
+                logits = self._forward_single_with_dropout(x)
                 predictions_mc.append(logits)
         
         # Restore original training state
@@ -185,8 +213,12 @@ class NeuralNetworkFitter:
                 losses.append(loss.item())
                 loss.backward()
                 self.optimizer.step()
-
-            print(f"Epoca {epoch + 1}/{self.inp_list.epochs}, Loss: {loss.item()}")
+                
+                # Free memory after each mini-batch
+                del x_df, x_mb, outputs, loss
+                torch.cuda.empty_cache() if torch.cuda.is_available() else None
+            
+            print(f"Epoca {epoch + 1}/{self.inp_list.epochs}, Loss: {losses[-1]}")
             if np.mean(losses[-len(data):]) <= 1e-4:
                 break
 
@@ -194,9 +226,8 @@ class NeuralNetworkFitter:
     def predict(self, data: pd.DataFrame, mb_size:int = 2):
         out = self.predict_proba(data, mb_size)
         predicted_classes = torch.argmax(out, dim=-1) + 1
-        #Elminare le prossime due righe in IRBOOST
-        mask = data.index.tolist()
-        predicted_classes = pd.DataFrame(predicted_classes.cpu(), index=mask)
+        # Restituisci numpy array per compatibilità con IRBoost
+        predicted_classes = predicted_classes.cpu().numpy()
         return predicted_classes
 
 
@@ -210,9 +241,45 @@ class NeuralNetworkFitter:
                 x_df = nifti_df_from_local(paths_df=x)
                 x_mb = dataframe_to_tensor(x_df)
                 x_mb = x_mb.to(self.device)
-                outputs=self.model.forward(x_mb, dropout_enabled=False)
+                outputs = self.model.forward(x_mb)
                 predicts = torch.cat([predicts,torch.softmax(outputs, dim=-1)], dim=0)
+                
+                # Free memory
+                del x_df, x_mb, outputs
+        
         return predicts[1:]
+    
+    def predict_proba_with_dropout(self, data: pd.DataFrame, mb_size=2):
+        """
+        Single forward pass with dropout enabled (for MC Dropout at boosting level).
+        Called 25 times by the boosting loop for MC sampling.
+        
+        Args:
+            data: DataFrame with image paths
+            mb_size: Mini-batch size
+            
+        Returns:
+            Tensor of shape [batch_size, num_classes]
+        """
+        self.model.eval()
+        
+        with torch.no_grad():  # Disable gradient computation for efficiency
+            predicts = torch.zeros([1, self.model.num_classes]).to(self.device)
+            for mb in range(0, len(data), mb_size):
+                x = data[mb: mb+mb_size]
+                x_df = nifti_df_from_local(paths_df=x)
+                x_mb = dataframe_to_tensor(x_df)
+                x_mb = x_mb.to(self.device)
+                
+                # Use dedicated MC Dropout forward method
+                outputs = self.model._forward_single_with_dropout(x_mb)
+                predicts = torch.cat([predicts, torch.softmax(outputs, dim=-1)], dim=0)
+                
+                # Free memory
+                del x_df, x_mb, outputs
+        
+        return predicts[1:]
+    
     
     def predict_proba_mcdo(self, data: pd.DataFrame, n_mc_samples=25, mb_size=2):
         """
@@ -253,6 +320,9 @@ class NeuralNetworkFitter:
             all_confidence.append(uncertainty_dict['confidence'])
             all_epistemic.append(uncertainty_dict['epistemic_uncertainty'])
             all_predicted_class.append(uncertainty_dict['predicted_class'])
+            
+            # Free memory
+            del x_df, x_mb, predictions_mc, uncertainty_dict
         
         # Concatenate all batches
         return {

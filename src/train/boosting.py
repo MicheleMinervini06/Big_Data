@@ -57,7 +57,7 @@ def training_function(X_mods,y_train,fold,params):
 
     ir_boost = IRBoostSH(base_estimators=base_estimators, n_iter=n_iteration, learning_rate=1.)
 
-    ir_boost.fit(X_mods, y_train,mod)
+    ir_boost.fit(X_mods, y_train, mod)
 
     return ir_boost
 
