@@ -3,7 +3,7 @@ exp1:
   train: true
   params:
     epochs: 50
-    mb_size_train: 20
+    mb_size_train: 8  
     n_iteration: 10
     frezze_layer: 2
     mod: null
@@ -13,7 +13,7 @@ exp2:
   train: true
   params:
     epochs: 50
-    mb_size_train: 20
+    mb_size_train: 15
     n_iteration: 10
     frezze_layer: 3
     mod: null
@@ -23,7 +23,7 @@ exp3:
   train: true
   params:
     epochs: 1
-    mb_size_train: 20
+    mb_size_train: 15
     n_iteration: 1
     frezze_layer: 2
     mod: 'clinical'
@@ -33,7 +33,7 @@ exp4:
   train: true
   params:
     epochs: 50
-    mb_size_train: 20
+    mb_size_train: 15
     n_iteration: 1
     frezze_layer: 2
     mod: 'images'
@@ -43,7 +43,7 @@ exp5:
   train: true
   params:
     epochs: 50
-    mb_size_train: 20
+    mb_size_train: 15
     n_iteration: 1
     frezze_layer: 3
     mod: 'images'
@@ -53,7 +53,7 @@ exp6:
   train: true
   params:
     epochs: 50
-    mb_size_train: 20
+    mb_size_train: 15
     n_iteration: 10
     frezze_layer: 2
     mod: null
@@ -62,3 +62,27 @@ exp7:
   id: 7
   train: false
   params: {}
+
+exp8:
+  id: 8
+  train: false             
+  reuse_from: exp1          # Riusa i modelli già addestrati da exp1
+  params:
+    epochs: 50
+    mb_size_train: 4
+    n_iteration: 10
+    frezze_layer: 2
+    mod: null
+    use_mcdo: true  # MC Dropout enabled
+
+# Experiment suites for comparison
+experiment_suites:
+  baseline_vs_mcdo:
+    description: 'Compare baseline (exp1) vs MC Dropout (exp8)'
+    experiments:
+      - exp1
+      - exp8
+    comparison_focus:
+      - 'Effect of MC Dropout on accuracy'
+      - 'Epistemic uncertainty quantification'
+      - 'Confidence-weighted edge impact'
