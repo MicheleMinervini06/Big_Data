@@ -1,2 +1,3 @@
 - Modify the training code to actually retunr the results in addition to printing them to terminal and adapt the experiments suite code accordingly
 - Migliorare il debug
+- Retrainare il modello con i dati aumentati, data leakege

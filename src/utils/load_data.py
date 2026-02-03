@@ -142,7 +142,11 @@ class ImagePreprocessor:
 def dataframe_to_tensor(data: pd.DataFrame):
     x_list = []
     for index in data.index:
-        x_list.append(data.images[index])
+        img = data.images[index]
+        # Convert numpy array to tensor if needed (augmented images are numpy)
+        if isinstance(img, np.ndarray):
+            img = torch.from_numpy(img).float()
+        x_list.append(img)
 
     return torch.stack(x_list, dim=0)
 
@@ -171,6 +175,15 @@ def nifti_df_from_local(paths_df: pd.DataFrame):
         try:
             with open(obj, "rb") as fh:
                 pp = pickle.load(fh)
+                # Ensure consistent shape: add batch dimension if missing
+                # Original images: (1, D, H, W), Augmented: (D, H, W)
+                if isinstance(pp, np.ndarray):
+                    if pp.ndim == 3:
+                        pp = np.expand_dims(pp, axis=0)  # (D,H,W) -> (1,D,H,W)
+                    pp = torch.from_numpy(pp).float()
+                elif isinstance(pp, torch.Tensor):
+                    if pp.ndim == 3:
+                        pp = pp.unsqueeze(0)  # (D,H,W) -> (1,D,H,W)
                 imgs_list.append(pp)
         except Exception as e:
             print(f"Error loading pickle file {obj}: {e}")

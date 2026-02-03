@@ -1,6 +1,6 @@
 exp1:
   id: 1
-  train: true
+  train: true 
   params:
     epochs: 50
     mb_size_train: 8  
@@ -69,11 +69,59 @@ exp8:
   reuse_from: exp1          # Riusa i modelli già addestrati da exp1
   params:
     epochs: 50
-    mb_size_train: 4
+    mb_size_train: 8
     n_iteration: 10
     frezze_layer: 2
     mod: null
     use_mcdo: true  # MC Dropout enabled
+
+exp9:
+  id: 9
+  train: true
+  params:
+    epochs: 50
+    mb_size_train: 8
+    n_iteration: 10
+    frezze_layer: 2
+    mod: null
+    use_augmented: true  # Use pre-computed augmented images
+
+exp10:
+  id: 10
+  train: false
+  reuse_from: exp9
+  params:
+    epochs: 50
+    mb_size_train: 8
+    n_iteration: 10
+    frezze_layer: 2
+    mod: null
+    use_augmented: true  # Use pre-computed augmented images
+    use_mcdo: true  # MC Dropout enabled
+
+exp11:
+  id: 11
+  train: false             
+  reuse_from: exp1          # Riusa i modelli già addestrati da exp1
+  params:
+    epochs: 50
+    mb_size_train: 8
+    n_iteration: 10
+    frezze_layer: 2
+    mod: null
+    use_tta: true  # Test-Time Augmentation enabled
+
+exp12:
+  id: 12
+  train: false 
+  params:
+    use_conformal: true  # Conformal Prediction for guaranteed UQ
+    conformal_alpha: 0.1  # 90% coverage guarantee
+    epochs: 50
+    mb_size_train: 8
+    n_iteration: 10
+    frezze_layer: 2    
+
 
 # Experiment suites for comparison
 experiment_suites:
@@ -86,3 +134,13 @@ experiment_suites:
       - 'Effect of MC Dropout on accuracy'
       - 'Epistemic uncertainty quantification'
       - 'Confidence-weighted edge impact'
+  
+  baseline_vs_augmented:
+    description: 'Compare baseline (exp1) vs training with augmentation (exp9)'
+    experiments:
+      - exp1
+      - exp9
+    comparison_focus:
+      - 'Effect of data augmentation on CNN performance'
+      - 'CNN alpha contribution to ensemble'
+      - 'Overall accuracy improvement'

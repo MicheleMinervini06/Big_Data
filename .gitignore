@@ -7,6 +7,7 @@ __pycache__/
 # data 
 /src/data/images_pre
 /src/data/images_post
+/src/data/images_augmented
 /src/data/tables
 /src/data/embed/
 
