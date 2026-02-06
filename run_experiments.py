@@ -4,7 +4,7 @@ import numpy as np
 from src.models.autoencoder import Autoencoder
 from src.models.imagerffitterinput import ImageEmbeddingExtractor,  ImageEmbeddingExtractorInput
 from sklearn.metrics import classification_report
-from src.data.processing_data import processing_features_cv
+from src.data.processing_data import processing_features_cv, processing_features_cv_augmented, processing_features_cv_with_calibration
 from src.train.boosting import training_function
 from src.predict.evaluate_predict import evaluate
 import psutil
@@ -19,20 +19,34 @@ def run_boosting(name: str, config: dict):
     print(f"\n=== Running {name} ===")
     is_train = config.get("train", True)
     params = config.get("params", {})
-    use_mcdo = params.get("use_mcdo", False)  # MC Dropout per test
+    use_mcdo = params.get("use_mcdo", False)  # MC Dropout per epistemic uncertainty
+    use_tta = params.get("use_tta", False)  # TTA per aleatoric uncertainty
+    use_augmented = params.get("use_augmented", False)  # Augmented images
     reuse_from = config.get("reuse_from", None)  # Riusa modelli già addestrati
+    use_conformal = params.get("use_conformal", False)
+    conformal_alpha = params.get("conformal_alpha", 0.1)
     
     if reuse_from:
         print(f"Reusing models from '{reuse_from}' (skip training)")
         is_train = False
 
-    folds = processing_features_cv()
+    # Load data with or without augmentation / calibration
+    if use_conformal:
+        print(f"Loading dataset with calibration set for Conformal Prediction...")
+        folds = processing_features_cv_with_calibration(use_augmented=use_augmented)
+    elif use_augmented:
+        print(f"Loading augmented dataset (5x expansion)...")
+        folds = processing_features_cv_augmented(use_augmented=True)
+    else:
+        folds = processing_features_cv()
     
     all_metrics = []
 
     for i, fold in enumerate(folds, start=1):
         X_train, y_train = fold['X_train'], fold['y_train']
         X_test, y_test = fold['X_test'], fold['y_test']
+        X_calib = fold.get('X_calib', None)
+        y_calib = fold.get('y_calib', None)
         
 
         if is_train:
@@ -42,7 +56,14 @@ def run_boosting(name: str, config: dict):
             model_source = reuse_from if reuse_from else name
             model = load_model(model_name=f"{model_source}_fold_{i}")
 
-        metrics = evaluate(model, X_train, X_test, y_train, y_test, fold=i, use_mcdo=use_mcdo)
+        # Extract calibration set if available
+        X_calib = fold.get('X_calib', None)
+        y_calib = fold.get('y_calib', None)
+        
+        metrics = evaluate(model, X_train, X_test, y_train, y_test, fold=i, 
+                          X_calib=X_calib, y_calib=y_calib,
+                          use_mcdo=use_mcdo, use_tta=use_tta, use_conformal=use_conformal,
+                          conformal_alpha=conformal_alpha)
         all_metrics.append(metrics)
 
         if is_train:
@@ -82,12 +103,42 @@ def run_boosting(name: str, config: dict):
     for k, v in avg_metrics.items():
         print(f"{k}: {v:.4f}")
     
-    # Calcola metriche MC Dropout se disponibili
+    # Calcola metriche UQ se disponibili
     if use_mcdo and all('confidence' in m for m in all_metrics):
         avg_confidence = np.mean([m['confidence'] for m in all_metrics])
         avg_epistemic = np.mean([m['epistemic_uncertainty'] for m in all_metrics])
         print(f"mean_confidence: {avg_confidence:.4f}")
         print(f"mean_epistemic_uncertainty: {avg_epistemic:.4f}")
+        
+        # Stampa correlazioni se disponibili
+        if all('unc_correlation_spearman' in m for m in all_metrics):
+            avg_spearman = np.mean([m['unc_correlation_spearman'] for m in all_metrics])
+            avg_pearson = np.mean([m['unc_correlation_pearson'] for m in all_metrics])
+            print(f"mean_epistemic_correlation_spearman: {avg_spearman:.4f}")
+            print(f"mean_epistemic_correlation_pearson: {avg_pearson:.4f}")
+    
+    if use_tta and all('aleatoric_uncertainty' in m for m in all_metrics):
+        avg_aleatoric = np.mean([m['aleatoric_uncertainty'] for m in all_metrics])
+        print(f"mean_aleatoric_uncertainty: {avg_aleatoric:.4f}")
+        
+        # Stampa correlazioni TTA se disponibili
+        if all('alea_correlation_spearman' in m for m in all_metrics):
+            avg_spearman_alea = np.mean([m['alea_correlation_spearman'] for m in all_metrics])
+            avg_pearson_alea = np.mean([m['alea_correlation_pearson'] for m in all_metrics])
+            print(f"mean_aleatoric_correlation_spearman: {avg_spearman_alea:.4f}")
+            print(f"mean_aleatoric_correlation_pearson: {avg_pearson_alea:.4f}")
+    
+    if use_conformal and all('conformal_uncertainty' in m for m in all_metrics):
+        avg_conf_unc = np.mean([m['conformal_uncertainty'] for m in all_metrics])
+        avg_coverage = np.mean([m['conformal_coverage'] for m in all_metrics])
+        print(f"mean_conformal_uncertainty: {avg_conf_unc:.4f}")
+        print(f"mean_conformal_coverage: {avg_coverage:.2%} (target: {(1-conformal_alpha):.2%})")
+        
+        if all('conf_correlation_spearman' in m for m in all_metrics):
+            avg_spearman_conf = np.mean([m['conf_correlation_spearman'] for m in all_metrics])
+            avg_pearson_conf = np.mean([m['conf_correlation_pearson'] for m in all_metrics])
+            print(f"mean_conformal_correlation_spearman: {avg_spearman_conf:.4f}")
+            print(f"mean_conformal_correlation_pearson: {avg_pearson_conf:.4f}")
 
 
 def run_autoencoder():
