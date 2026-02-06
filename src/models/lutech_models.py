@@ -232,19 +232,20 @@ class BoostSH(BaseEstimator, ClassifierMixin):
                     if hasattr(self.models[t], 'predict_proba_with_dropout'):
                         # CNN with MC Dropout
                         probas = self.models[t].predict_proba_with_dropout(X_test)
-                    elif self.models[t].__class__.__name__ == 'RandomForestClassifier':
-                        # Random Forest: subsample 70% of trees randomly (like dropout p=0.3)
-                        n_trees = len(self.models[t].estimators_)
-                        n_sample = int(0.7 * n_trees)  # Use 70% of trees
-                        sampled_indices = np.random.choice(n_trees, size=n_sample, replace=False)
-                        sampled_trees = [self.models[t].estimators_[i] for i in sampled_indices]
-                        
-                        # Convert DataFrame to numpy to avoid sklearn warning
-                        X_test_np = X_test.values if isinstance(X_test, pd.DataFrame) else X_test
-                        
-                        # Average predictions from sampled trees
-                        tree_predictions = np.array([tree.predict_proba(X_test_np) for tree in sampled_trees])
-                        probas = tree_predictions.mean(axis=0)
+                    # COMMENTED: Tree subsampling approach (replaced by Conformal Prediction)
+                    # elif self.models[t].__class__.__name__ == 'RandomForestClassifier':
+                    #     # Random Forest: subsample 70% of trees randomly (like dropout p=0.3)
+                    #     n_trees = len(self.models[t].estimators_)
+                    #     n_sample = int(0.7 * n_trees)  # Use 70% of trees
+                    #     sampled_indices = np.random.choice(n_trees, size=n_sample, replace=False)
+                    #     sampled_trees = [self.models[t].estimators_[i] for i in sampled_indices]
+                    #     
+                    #     # Convert DataFrame to numpy to avoid sklearn warning
+                    #     X_test_np = X_test.values if isinstance(X_test, pd.DataFrame) else X_test
+                    #     
+                    #     # Average predictions from sampled trees
+                    #     tree_predictions = np.array([tree.predict_proba(X_test_np) for tree in sampled_trees])
+                    #     probas = tree_predictions.mean(axis=0)
                     else:
                         probas = self.models[t].predict_proba(X_test)
                     
@@ -279,6 +280,334 @@ class BoostSH(BaseEstimator, ClassifierMixin):
             'predictions': final_predictions,
             'confidence': pd.Series(confidence, index=index),
             'epistemic_uncertainty': pd.Series(epistemic_uncertainty, index=index)
+        }
+    
+    def predict_with_tta(self, X, n_tta_samples=10, noise_scale=0.05):
+        """
+        Predict with Test-Time Augmentation for aleatoric uncertainty (data uncertainty).
+        Perturbs CLINICAL data only with feature-specific realistic noise levels.
+        
+        Noise levels based on published clinical variability:
+        - MMSE: ±2 points (test-retest variability)
+        - ABETA (CSF_Abeta42): ±8% (assay variability)
+        - TAU: ±7-10% (measurement error literature)
+        - PTAU: ±12% (newer biomarker, more noise)
+        - AGE: 0 (stable)
+        - APOE4: 0 (genetic, immutable)
+        
+        Args:
+            X: dict of modality data
+            n_tta_samples: number of augmented samples per instance
+            noise_scale: DEPRECATED - now uses feature-specific noise levels
+            
+        Returns:
+            dict with 'predictions', 'confidence', 'aleatoric_uncertainty'
+        """
+        self.check_X(X)
+        assert len(self.models) > 0, 'Model not trained'
+        
+        index = self.__index_union__(X)
+        
+        # Define feature-specific noise levels
+        feature_noise_config = {
+            # Absolute noise (±N points)
+            'MMSE': {'type': 'absolute', 'std': 2.0},
+            # Percentage noise (±N% of value)
+            'ABETA': {'type': 'percentage', 'std': 0.08},  # ±8%
+            'TAU': {'type': 'percentage', 'std': 0.085},   # ±8.5% (midpoint 7-10%)
+            'PTAU': {'type': 'percentage', 'std': 0.12},   # ±12%
+            # No noise (stable/genetic)
+            'AGE': {'type': 'none'},
+            'APOE4': {'type': 'none'}
+        }
+        
+        # Print TTA configuration (once)
+        if 'clinical' in X:
+            print("\n[TTA] Feature-specific noise levels (realistic clinical variability):")
+            print("  MMSE:       ±2.0 points (absolute)")
+            print("  ABETA:      ±8.0% (assay variability)")
+            print("  TAU:        ±8.5% (measurement error)")
+            print("  PTAU:       ±12.0% (newer biomarker)")
+            print("  AGE/APOE4:  0 (stable/genetic)")
+            print("  Others:     ±5.0% (default)")
+            print()
+        
+        # Collect TTA samples
+        tta_predictions = []
+        for tta_iter in range(n_tta_samples):
+            np.random.seed(100 + tta_iter)  # Different seed from MCDO
+            
+            if tta_iter % 5 == 0:
+                print(f"TTA iteration {tta_iter+1}/{n_tta_samples}...")
+            
+            # Create perturbed data
+            X_perturbed = {}
+            for modality, data in X.items():
+                if modality == 'clinical':
+                    # Apply feature-specific noise
+                    perturbed = data.copy()
+                    
+                    for col in data.columns:
+                        # Find matching noise config (check if column name contains key)
+                        noise_cfg = None
+                        for feature_name, cfg in feature_noise_config.items():
+                            if feature_name in col.upper():
+                                noise_cfg = cfg
+                                break
+                        
+                        if noise_cfg is None:
+                            # Default: 5% relative noise for unknown features
+                            noise_cfg = {'type': 'percentage', 'std': 0.05}
+                        
+                        # Apply noise based on type
+                        if noise_cfg['type'] == 'absolute':
+                            # Absolute noise (e.g., MMSE ±2 points)
+                            noise = np.random.normal(0, noise_cfg['std'], size=len(data))
+                            perturbed[col] = data[col] + noise
+                        elif noise_cfg['type'] == 'percentage':
+                            # Percentage noise (e.g., TAU ±8.5%)
+                            noise = np.random.normal(0, noise_cfg['std'], size=len(data))
+                            perturbed[col] = data[col] * (1 + noise)
+                        # elif noise_cfg['type'] == 'none': no perturbation
+                    
+                    X_perturbed[modality] = perturbed
+                else:
+                    # Images: no perturbation (already has epistemic via MCDO)
+                    X_perturbed[modality] = data
+            
+            # Standard prediction on perturbed data
+            predictions = pd.DataFrame(0., index=index, columns=self.classes)
+            
+            for t in range(len(self.models)):
+                if self.modalities_selected[t] in X_perturbed.keys():
+                    X_test = X_perturbed[self.modalities_selected[t]]
+                    test_index = X_test.index
+                    
+                    probas = self.models[t].predict_proba(X_test)
+                    probas = probas.detach().cpu().numpy() if not isinstance(probas, np.ndarray) else probas
+                    
+                    for i, idx in enumerate(test_index):
+                        predictions.loc[idx] += float(self.alphas[t]) * probas[i]
+            
+            # Normalize
+            predictions_normalized = predictions.div(predictions.sum(axis=1), axis=0).fillna(0)
+            tta_predictions.append(predictions_normalized.values)
+        
+        # Stack TTA samples: [n_tta_samples, n_samples, n_classes]
+        tta_predictions = np.stack(tta_predictions, axis=0)
+        
+        # Mean prediction
+        mean_probs = tta_predictions.mean(axis=0)
+        
+        # Confidence (max probability)
+        confidence = mean_probs.max(axis=1)
+        
+        # Aleatoric uncertainty (std of max probability across TTA samples)
+        max_probs_per_sample = tta_predictions.max(axis=2)
+        aleatoric_uncertainty = max_probs_per_sample.std(axis=0)
+        
+        # Final predictions
+        final_predictions = pd.Series(self.classes[mean_probs.argmax(axis=1)], index=index)
+        
+        return {
+            'predictions': final_predictions,
+            'confidence': pd.Series(confidence, index=index),
+            'aleatoric_uncertainty': pd.Series(aleatoric_uncertainty, index=index)
+        }
+    
+    def predict_proba_with_contributions(self, X):
+        """
+        Predict probabilities and track contributions from each modality per patient.
+        
+        This method decomposes the final prediction into modality-specific contributions,
+        allowing to understand which modality (clinical vs imaging) was more influential
+        for each individual patient's prediction.
+        
+        Args:
+            X: dict of modality data
+            
+        Returns:
+            tuple: (predictions_normalized, contributions) where:
+                - predictions_normalized: DataFrame with final probabilities per class
+                - contributions: dict with 'clinical' and 'imaging' DataFrames showing
+                  the contribution of each modality to the final probability
+        """
+        self.check_X(X)
+        assert len(self.models) > 0, 'Model not trained'
+        
+        index = self.__index_union__(X)
+        predictions = pd.DataFrame(0., index=index, columns=self.classes)
+        
+        # Track contributions separately by modality
+        contrib_clinical = pd.DataFrame(0., index=index, columns=self.classes)
+        contrib_imaging = pd.DataFrame(0., index=index, columns=self.classes)
+        
+        for t in range(len(self.models)):
+            if self.modalities_selected[t] in X.keys():
+                X_test = X[self.modalities_selected[t]]
+                test_index = X_test.index
+                
+                if self.models[t].__class__.__name__ == 'RandomForestClassifier':
+                    probas = self.models[t].predict_proba(X_test)
+                else:
+                    probas = self.models[t].predict_proba(X_test)
+                    
+                probas = probas.detach().cpu().numpy() if not isinstance(probas, np.ndarray) else probas
+                
+                # Weight by alpha
+                weighted_proba = self.alphas[t] * probas
+                
+                for i, idx in enumerate(test_index):
+                    predictions.loc[idx, :] += weighted_proba[i, :]
+                    
+                    # Track contribution by modality
+                    if self.modalities_selected[t] == 'clinical':
+                        contrib_clinical.loc[idx, :] += weighted_proba[i, :]
+                    elif self.modalities_selected[t] == 'images':
+                        contrib_imaging.loc[idx, :] += weighted_proba[i, :]
+        
+        # Normalize predictions
+        predictions_normalized = pd.DataFrame(0, columns=predictions.columns, 
+                                             index=predictions.index, dtype="float")
+        for i in range(len(predictions)):
+            if predictions.iloc[i, :].sum() == 0:
+                continue
+            else:
+                predictions_normalized.iloc[i, :] = predictions.iloc[i, :] / predictions.iloc[i, :].sum()
+        
+        # Normalize contributions (relative to final prediction sum, not independently)
+        contrib_clinical_normalized = pd.DataFrame(0, columns=contrib_clinical.columns,
+                                                   index=contrib_clinical.index, dtype="float")
+        contrib_imaging_normalized = pd.DataFrame(0, columns=contrib_imaging.columns,
+                                                  index=contrib_imaging.index, dtype="float")
+        
+        for i in range(len(predictions)):
+            total = predictions.iloc[i, :].sum()
+            if total == 0:
+                continue
+            contrib_clinical_normalized.iloc[i, :] = contrib_clinical.iloc[i, :] / total
+            contrib_imaging_normalized.iloc[i, :] = contrib_imaging.iloc[i, :] / total
+        
+        contributions = {
+            'clinical': contrib_clinical_normalized,
+            'imaging': contrib_imaging_normalized
+        }
+        
+        return predictions_normalized, contributions
+    
+    def predict_with_conformal(self, X_test, X_calib, y_calib, alpha=0.1):
+        """
+        Predict with Conformal Prediction for uncertainty quantification.
+        
+        Based on Inductive Conformal Prediction:
+        - Uses calibration set to compute non-conformity scores
+        - Creates prediction sets with guaranteed coverage (1 - alpha)
+        - Uncertainty = size of prediction set (larger = more uncertain)
+        
+        Args:
+            X_test: dict of test modalities
+            X_calib: dict of calibration modalities (20% of training)
+            y_calib: pd.Series of calibration labels
+            alpha: miscoverage rate (default 0.1 for 90% coverage)
+            
+        Returns:
+            dict with 'predictions', 'confidence', 'prediction_sets', 'conformal_uncertainty'
+        """
+        self.check_X(X_test)
+        self.check_X(X_calib)
+        assert len(self.models) > 0, 'Model not trained'
+        
+        print(f"\n{'='*80}")
+        print(f"Conformal Prediction (Inductive CP)")
+        print(f"{'='*80}")
+        print(f"Calibration set size: {len(y_calib)}")
+        print(f"Miscoverage rate α: {alpha:.2%} (target coverage: {(1-alpha):.2%})")
+        print(f"Number of classes: {len(self.classes)}")
+        print()
+        
+        # Step 1: Get calibration probabilities
+        print("Step 1: Computing non-conformity scores on calibration set...")
+        calib_probs = self.predict_proba(X_calib)
+        
+        # Step 2: Compute non-conformity scores = 1 - P(true_class)
+        non_conformity_scores = []
+        for idx in y_calib.index:
+            true_class = y_calib[idx]
+            prob_true_class = calib_probs.loc[idx, true_class]
+            non_conformity = 1 - prob_true_class
+            non_conformity_scores.append(non_conformity)
+        
+        non_conformity_scores = np.array(non_conformity_scores)
+        
+        # Step 3: Compute quantile threshold
+        n_calib = len(non_conformity_scores)
+        q_level = np.ceil((n_calib + 1) * (1 - alpha)) / n_calib
+        q_level = min(q_level, 1.0)  # Cap at 1.0
+        threshold = np.quantile(non_conformity_scores, q_level)
+        
+        print(f"Non-conformity threshold (q={q_level:.3f}): {threshold:.4f}")
+        print(f"  Mean non-conformity: {non_conformity_scores.mean():.4f}")
+        print(f"  Median non-conformity: {np.median(non_conformity_scores):.4f}")
+        print()
+        
+        # Step 4: Predict on test set and create prediction sets
+        print("Step 2: Creating prediction sets for test samples...")
+        test_probs = self.predict_proba(X_test)
+        
+        prediction_sets = []
+        conformal_uncertainties = []
+        confidences = []
+        final_predictions = []
+        
+        for idx in test_probs.index:
+            # Prediction set = {classes where 1 - P(class) ≤ threshold}
+            # Equivalently: {classes where P(class) ≥ 1 - threshold}
+            prob_threshold = 1 - threshold
+            pred_set = test_probs.columns[test_probs.loc[idx] >= prob_threshold].tolist()
+            
+            # If empty set (very rare), include top class
+            if len(pred_set) == 0:
+                pred_set = [test_probs.loc[idx].idxmax()]
+            
+            prediction_sets.append(pred_set)
+            
+            # Uncertainty = normalized set size: (|set| - 1) / (n_classes - 1)
+            # Range: [0, 1] where 0 = certain (singleton), 1 = completely uncertain (all classes)
+            n_classes = len(self.classes)
+            uncertainty = (len(pred_set) - 1) / max(n_classes - 1, 1)
+            conformal_uncertainties.append(uncertainty)
+            
+            # Confidence = max probability in set
+            max_prob_in_set = test_probs.loc[idx, pred_set].max()
+            confidences.append(max_prob_in_set)
+            
+            # Final prediction = class with highest probability
+            final_pred = test_probs.loc[idx].idxmax()
+            final_predictions.append(final_pred)
+        
+        # Convert to Series/DataFrame
+        index = test_probs.index
+        final_predictions = pd.Series(final_predictions, index=index)
+        confidences = pd.Series(confidences, index=index)
+        conformal_uncertainties = pd.Series(conformal_uncertainties, index=index)
+        
+        # Statistics
+        set_sizes = [len(s) for s in prediction_sets]
+        print(f"Prediction set statistics:")
+        print(f"  Mean set size: {np.mean(set_sizes):.2f}")
+        print(f"  Median set size: {np.median(set_sizes):.1f}")
+        print(f"  Singleton sets (certain): {sum(s == 1 for s in set_sizes)}/{len(set_sizes)} ({sum(s == 1 for s in set_sizes)/len(set_sizes):.1%})")
+        print(f"  Full sets (uncertain): {sum(s == n_classes for s in set_sizes)}/{len(set_sizes)} ({sum(s == n_classes for s in set_sizes)/len(set_sizes):.1%})")
+        print(f"Mean conformal uncertainty: {conformal_uncertainties.mean():.4f}")
+        print("=" * 80 + "\n")
+        
+        return {
+            'predictions': final_predictions,
+            'confidence': confidences,
+            'prediction_sets': prediction_sets,
+            'conformal_uncertainty': conformal_uncertainties,
+            'threshold': threshold,
+            'alpha': alpha
         }
 
     def check_input(self, X, y):
