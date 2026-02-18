@@ -1,0 +1,193 @@
+\relax 
+\providecommand \babel@aux [2]{\global \let \babel@toc \@gobbletwo }
+\@nameuse{bbl@beforestart}
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\babel@aux{english}{}
+\citation{alzheimer2023facts}
+\citation{vanDyck2023lecanemab}
+\citation{petersen2014mci}
+\citation{buttaro2025}
+\citation{crispdm2000}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{4}{section.1}\protected@file@percent }
+\newlabel{sec:introduction}{{1}{4}{Introduction}{section.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{Contributions.}{4}{section*.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Business Understanding}{4}{section.2}\protected@file@percent }
+\newlabel{sec:business}{{2}{4}{Business Understanding}{section.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Problem Definition}{4}{subsection.2.1}\protected@file@percent }
+\citation{jack2008adni}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Success Criteria}{5}{subsection.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Risk Assessment}{5}{subsection.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Data Understanding}{6}{section.3}\protected@file@percent }
+\newlabel{sec:data_understanding}{{3}{6}{Data Understanding}{section.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}The ADNI Dataset}{6}{subsection.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Clinical Data (EHR).}{6}{section*.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Imaging Data (3D MRI).}{6}{section*.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Diagnostic Labels.}{6}{section*.5}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Columns excluded from the ADNIMERGE clinical dataset.}}{7}{table.caption.6}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{tab:adni_waste}{{1}{7}{Columns excluded from the ADNIMERGE clinical dataset}{table.caption.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Exploratory Analysis}{7}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Dataset composition and class distribution.}{7}{section*.7}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Distribution of baseline diagnostic labels among the 76 subjects with available MRI scans. The dataset exhibits natural class imbalance characteristic of AD progression studies, with MCI as the most prevalent category (50\%), followed by CN (30\%) and AD (20\%).}}{7}{figure.caption.8}\protected@file@percent }
+\newlabel{fig:class_distribution}{{1}{7}{Distribution of baseline diagnostic labels among the 76 subjects with available MRI scans. The dataset exhibits natural class imbalance characteristic of AD progression studies, with MCI as the most prevalent category (50\%), followed by CN (30\%) and AD (20\%)}{figure.caption.8}{}}
+\@writefile{toc}{\contentsline {paragraph}{Missing values and feature quality.}{7}{section*.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Clinical feature distributions across diagnostic classes.}{8}{section*.10}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Distribution of key clinical features (MMSE, ADAS13, FAQ, Age) across diagnostic classes. Violin plots show probability density, overlaid with box plots indicating quartiles and medians. Note the ceiling effect in MMSE for CN and the sharp increase in FAQ variance for the AD group.}}{9}{figure.caption.11}\protected@file@percent }
+\newlabel{fig:clinical_features}{{2}{9}{Distribution of key clinical features (MMSE, ADAS13, FAQ, Age) across diagnostic classes. Violin plots show probability density, overlaid with box plots indicating quartiles and medians. Note the ceiling effect in MMSE for CN and the sharp increase in FAQ variance for the AD group}{figure.caption.11}{}}
+\@writefile{toc}{\contentsline {paragraph}{Brain volumetric biomarkers.}{9}{section*.12}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Regional brain volumes by diagnostic class. Box plots show median, interquartile range, and outliers. Progressive hippocampal/entorhinal atrophy and significant ventricular expansion characterize the transition from CN to AD, with MCI representing a highly heterogeneous intermediate stage.}}{10}{figure.caption.13}\protected@file@percent }
+\newlabel{fig:brain_volumes}{{3}{10}{Regional brain volumes by diagnostic class. Box plots show median, interquartile range, and outliers. Progressive hippocampal/entorhinal atrophy and significant ventricular expansion characterize the transition from CN to AD, with MCI representing a highly heterogeneous intermediate stage}{figure.caption.13}{}}
+\@writefile{toc}{\contentsline {paragraph}{Feature correlations.}{10}{section*.14}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Pearson correlation matrix of the top 20 clinical and volumetric features by variance. Warm colors (red) indicate positive correlation, cool colors (blue) indicate negative correlation. The clustering shows strong associations between global cognitive assessments (MMSE, ADAS), memory tests (RAVLT, LDELTOTAL), and structural measures (Entorhinal, Ventricles), confirming expected clinical patterns in Alzheimer's Disease.}}{11}{figure.caption.15}\protected@file@percent }
+\newlabel{fig:correlation_matrix}{{4}{11}{Pearson correlation matrix of the top 20 clinical and volumetric features by variance. Warm colors (red) indicate positive correlation, cool colors (blue) indicate negative correlation. The clustering shows strong associations between global cognitive assessments (MMSE, ADAS), memory tests (RAVLT, LDELTOTAL), and structural measures (Entorhinal, Ventricles), confirming expected clinical patterns in Alzheimer's Disease}{figure.caption.15}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Data Quality and Missing Modalities}{11}{subsection.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Data Preparation}{11}{section.4}\protected@file@percent }
+\newlabel{sec:data_preparation}{{4}{11}{Data Preparation}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Clinical Data Pipeline}{11}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}MRI Image Pipeline}{12}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Data Augmentation for MRI}{12}{subsection.4.3}\protected@file@percent }
+\newlabel{sec:augmentation}{{4.3}{12}{Data Augmentation for MRI}{subsection.4.3}{}}
+\citation{chen2019medicalnet}
+\@writefile{toc}{\contentsline {paragraph}{Anti-leakage strategy.}{13}{section*.16}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Cross-Validation and Data Splits}{13}{subsection.4.4}\protected@file@percent }
+\newlabel{sec:splits}{{4.4}{13}{Cross-Validation and Data Splits}{subsection.4.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Modeling}{13}{section.5}\protected@file@percent }
+\newlabel{sec:modeling}{{5}{13}{Modeling}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Architecture Overview}{13}{subsection.5.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces High-level architecture of the \textsc  {Veroneca}{} multimodal classification system. Clinical tabular data is processed by a Random Forest, while 3D MRI volumes are processed by a fine-tuned ResNet-18. The IRBoostSH algorithm fuses the two modalities through boosting with multi-armed bandit modality selection.}}{13}{figure.caption.17}\protected@file@percent }
+\newlabel{fig:architecture}{{5}{13}{High-level architecture of the \veroneca {} multimodal classification system. Clinical tabular data is processed by a Random Forest, while 3D MRI volumes are processed by a fine-tuned ResNet-18. The IRBoostSH algorithm fuses the two modalities through boosting with multi-armed bandit modality selection}{figure.caption.17}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Clinical Branch: Random Forest}{13}{subsection.5.2}\protected@file@percent }
+\newlabel{sec:rf}{{5.2}{13}{Clinical Branch: Random Forest}{subsection.5.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Imaging Branch: VeroResNet}{14}{subsection.5.3}\protected@file@percent }
+\newlabel{sec:resnet}{{5.3}{14}{Imaging Branch: VeroResNet}{subsection.5.3}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.1}Architecture Details}{14}{subsubsection.5.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.3.2}Transfer Learning and Fine-Tuning}{14}{subsubsection.5.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Multimodal Boosting: IRBoostSH}{14}{subsection.5.4}\protected@file@percent }
+\newlabel{sec:boosting}{{5.4}{14}{Multimodal Boosting: IRBoostSH}{subsection.5.4}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.1}Algorithm Description}{14}{subsubsection.5.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.2}Handling Missing Modalities}{15}{subsubsection.5.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.3}Prediction Aggregation}{15}{subsubsection.5.4.3}\protected@file@percent }
+\newlabel{eq:aggregation}{{7}{15}{Prediction Aggregation}{equation.7}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.4.4}Cost-Sensitive Boosting}{15}{subsubsection.5.4.4}\protected@file@percent }
+\newlabel{sec:cost_boosting}{{5.4.4}{15}{Cost-Sensitive Boosting}{subsubsection.5.4.4}{}}
+\citation{gal2016dropout}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Clinical misclassification cost matrix $C(i,j)$ where rows represent true classes and columns represent predicted classes.}}{16}{table.caption.18}\protected@file@percent }
+\newlabel{tab:cost_matrix}{{2}{16}{Clinical misclassification cost matrix $C(i,j)$ where rows represent true classes and columns represent predicted classes}{table.caption.18}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5}Uncertainty Quantification}{16}{subsection.5.5}\protected@file@percent }
+\newlabel{sec:uq}{{5.5}{16}{Uncertainty Quantification}{subsection.5.5}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.5.1}Epistemic Uncertainty: Monte Carlo Dropout}{16}{subsubsection.5.5.1}\protected@file@percent }
+\newlabel{sec:mcdo}{{5.5.1}{16}{Epistemic Uncertainty: Monte Carlo Dropout}{subsubsection.5.5.1}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.5.2}Aleatoric Uncertainty: Test-Time Augmentation}{16}{subsubsection.5.5.2}\protected@file@percent }
+\newlabel{sec:tta}{{5.5.2}{16}{Aleatoric Uncertainty: Test-Time Augmentation}{subsubsection.5.5.2}{}}
+\citation{vovk2005algorithmic}
+\citation{papadopoulos2002icp}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Feature-specific noise levels for TTA on clinical data, based on published measurement variability literature.}}{17}{table.caption.19}\protected@file@percent }
+\newlabel{tab:tta_noise}{{3}{17}{Feature-specific noise levels for TTA on clinical data, based on published measurement variability literature}{table.caption.19}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.5.3}Distribution-Free Uncertainty: Inductive Conformal Prediction}{17}{subsubsection.5.5.3}\protected@file@percent }
+\newlabel{sec:conformal}{{5.5.3}{17}{Distribution-Free Uncertainty: Inductive Conformal Prediction}{subsubsection.5.5.3}{}}
+\newlabel{eq:cp_guarantee}{{13}{17}{Distribution-Free Uncertainty: Inductive Conformal Prediction}{equation.13}{}}
+\@writefile{toc}{\contentsline {paragraph}{Procedure.}{17}{section*.20}\protected@file@percent }
+\citation{niculescu2005calibration}
+\citation{zadrozny2002kdd}
+\citation{guo2017calibration}
+\citation{elkan2001ijai}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.6}Probability Calibration}{18}{subsection.5.6}\protected@file@percent }
+\newlabel{sec:calibration}{{5.6}{18}{Probability Calibration}{subsection.5.6}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.6.1}Isotonic Regression}{18}{subsubsection.5.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.6.2}Temperature Scaling}{18}{subsubsection.5.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.6.3}Calibration Metrics}{18}{subsubsection.5.6.3}\protected@file@percent }
+\citation{lundberg2017shap}
+\citation{selvaraju2017gradcam}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.7}Cost-Sensitive Decision Making}{19}{subsection.5.7}\protected@file@percent }
+\newlabel{sec:cost_decision}{{5.7}{19}{Cost-Sensitive Decision Making}{subsection.5.7}{}}
+\newlabel{eq:cost_decision}{{20}{19}{Cost-Sensitive Decision Making}{equation.20}{}}
+\@writefile{toc}{\contentsline {paragraph}{Sensitivity analysis.}{19}{section*.21}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.8}Explainability}{19}{subsection.5.8}\protected@file@percent }
+\newlabel{sec:explainability}{{5.8}{19}{Explainability}{subsection.5.8}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.8.1}SHAP for Clinical Features}{19}{subsubsection.5.8.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.8.2}Grad-CAM for Brain Imaging}{19}{subsubsection.5.8.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Evaluation}{19}{section.6}\protected@file@percent }
+\newlabel{sec:evaluation}{{6}{19}{Evaluation}{section.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Experimental Setup}{19}{subsection.6.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Summary of experimental configurations. ``CS Train'' = cost-sensitive boosting during training; ``IR'' = Isotonic Regression post-hoc calibration; ``CS Infer'' = cost-sensitive Bayesian decision rule at inference.}}{20}{table.caption.22}\protected@file@percent }
+\newlabel{tab:experiments}{{4}{20}{Summary of experimental configurations. ``CS Train'' = cost-sensitive boosting during training; ``IR'' = Isotonic Regression post-hoc calibration; ``CS Infer'' = cost-sensitive Bayesian decision rule at inference}{table.caption.22}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Classification Performance}{20}{subsection.6.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Classification performance (macro-averaged, 5-fold CV). Configurations with inference-only modifications (\textit  {e.g.}, MC Dropout, CS decision) are omitted as they produce identical metrics to their base training configuration. Best results in bold.}}{20}{table.caption.23}\protected@file@percent }
+\newlabel{tab:classification_results}{{5}{20}{Classification performance (macro-averaged, 5-fold CV). Configurations with inference-only modifications (\eg , MC Dropout, CS decision) are omitted as they produce identical metrics to their base training configuration. Best results in bold}{table.caption.23}{}}
+\@writefile{toc}{\contentsline {paragraph}{Note on Data Augmentation.}{20}{section*.24}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Calibration Analysis}{20}{subsection.6.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Calibration metrics before and after Isotonic Regression (5-fold average).}}{21}{table.caption.25}\protected@file@percent }
+\newlabel{tab:calibration_results}{{6}{21}{Calibration metrics before and after Isotonic Regression (5-fold average)}{table.caption.25}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Expected Calibration Error (ECE) before and after Isotonic Regression across all 5 folds. The percentage reduction is displayed above each fold's bars. Calibration consistently improves across all folds, with ECE reductions ranging from 82.9\% (Fold 4) to 95.6\% (Fold 1).}}{21}{figure.caption.26}\protected@file@percent }
+\newlabel{fig:calibration_improvement}{{6}{21}{Expected Calibration Error (ECE) before and after Isotonic Regression across all 5 folds. The percentage reduction is displayed above each fold's bars. Calibration consistently improves across all folds, with ECE reductions ranging from 82.9\% (Fold 4) to 95.6\% (Fold 1)}{figure.caption.26}{}}
+\newlabel{fig:reliability_before}{{7a}{22}{Before Isotonic Regression (ECE = 0.191)}{figure.caption.27}{}}
+\newlabel{sub@fig:reliability_before}{{a}{22}{Before Isotonic Regression (ECE = 0.191)}{figure.caption.27}{}}
+\newlabel{fig:reliability_after}{{7b}{22}{After Isotonic Regression (ECE = 0.008)}{figure.caption.27}{}}
+\newlabel{sub@fig:reliability_after}{{b}{22}{After Isotonic Regression (ECE = 0.008)}{figure.caption.27}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Reliability diagrams for Fold 1 before and after Isotonic Regression calibration. The diagonal dashed line represents perfect calibration (predicted confidence matches empirical accuracy). Grey bars indicate the number of samples per confidence bin. Before calibration (left), the model shows systematic overconfidence in the mid-to-high confidence range. After calibration (right), the predicted probabilities closely align with the perfect calibration line, reducing ECE from 0.191 to 0.008 (95.6\% improvement).}}{22}{figure.caption.27}\protected@file@percent }
+\newlabel{fig:reliability}{{7}{22}{Reliability diagrams for Fold 1 before and after Isotonic Regression calibration. The diagonal dashed line represents perfect calibration (predicted confidence matches empirical accuracy). Grey bars indicate the number of samples per confidence bin. Before calibration (left), the model shows systematic overconfidence in the mid-to-high confidence range. After calibration (right), the predicted probabilities closely align with the perfect calibration line, reducing ECE from 0.191 to 0.008 (95.6\% improvement)}{figure.caption.27}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Baseline + Calibration vs.\ Cost-Sensitive Training}{22}{subsection.6.4}\protected@file@percent }
+\newlabel{sec:baseline_vs_cost}{{6.4}{22}{Baseline + Calibration vs.\ Cost-Sensitive Training}{subsection.6.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Comparison of training strategies: standard vs.\ cost-sensitive boosting with different inference rules (5-fold CV mean $\pm $ std). Lower mean cost is better. Best results in bold.}}{23}{table.caption.28}\protected@file@percent }
+\newlabel{tab:strategy_comparison}{{7}{23}{Comparison of training strategies: standard vs.\ cost-sensitive boosting with different inference rules (5-fold CV mean $\pm $ std). Lower mean cost is better. Best results in bold}{table.caption.28}{}}
+\@writefile{toc}{\contentsline {paragraph}{Discussion.}{23}{section*.29}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Uncertainty Quantification Results}{24}{subsection.6.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.5.1}MC Dropout (Epistemic)}{24}{subsubsection.6.5.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces MC Dropout uncertainty metrics (5-fold average).}}{24}{table.caption.30}\protected@file@percent }
+\newlabel{tab:mcdo_results}{{8}{24}{MC Dropout uncertainty metrics (5-fold average)}{table.caption.30}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.5.2}TTA (Aleatoric)}{24}{subsubsection.6.5.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Test-Time Augmentation uncertainty metrics (5-fold average).}}{24}{table.caption.31}\protected@file@percent }
+\newlabel{tab:tta_results}{{9}{24}{Test-Time Augmentation uncertainty metrics (5-fold average)}{table.caption.31}{}}
+\@writefile{toc}{\contentsline {paragraph}{Analysis: Ensemble stability and heuristic uncertainty limitations.}{24}{section*.32}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.5.3}Conformal Prediction}{25}{subsubsection.6.5.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {10}{\ignorespaces Conformal Prediction metrics (5-fold average, $\alpha = 0.1$).}}{25}{table.caption.33}\protected@file@percent }
+\newlabel{tab:conformal_results}{{10}{25}{Conformal Prediction metrics (5-fold average, $\alpha = 0.1$)}{table.caption.33}{}}
+\@writefile{toc}{\contentsline {paragraph}{Clinical Utility of Conformal Prediction Sets.}{25}{section*.34}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {11}{\ignorespaces Classification performance stratified by conformal prediction set type (5-fold average). Singleton sets correspond to confident predictions ($|\mathcal  {C}(x)| = 1$), while multi-class sets indicate diagnostic uncertainty ($|\mathcal  {C}(x)| \geq 2$). The performance gap ($\Delta $) demonstrates the clinical utility of conformal uncertainty for identifying ambiguous cases.}}{25}{table.caption.35}\protected@file@percent }
+\newlabel{tab:conformal_performance_by_settype}{{11}{25}{Classification performance stratified by conformal prediction set type (5-fold average). Singleton sets correspond to confident predictions ($|\mathcal {C}(x)| = 1$), while multi-class sets indicate diagnostic uncertainty ($|\mathcal {C}(x)| \geq 2$). The performance gap ($\Delta $) demonstrates the clinical utility of conformal uncertainty for identifying ambiguous cases}{table.caption.35}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.6}Explainability Analysis}{25}{subsection.6.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.6.1}SHAP Feature Importance}{25}{subsubsection.6.6.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Global feature importance for the clinical modality: top 10 features ranked by mean absolute SHAP value across all test samples. Features such as MMSE, FAQ, and ADAS13 are expected to dominate.}}{25}{figure.caption.36}\protected@file@percent }
+\newlabel{fig:shap_global}{{8}{25}{Global feature importance for the clinical modality: top 10 features ranked by mean absolute SHAP value across all test samples. Features such as MMSE, FAQ, and ADAS13 are expected to dominate}{figure.caption.36}{}}
+\@writefile{toc}{\contentsline {paragraph}{Individual Patient Explanations.}{26}{section*.37}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces SHAP waterfall plot for Patient 0, Predicted as AD.}}{26}{figure.caption.38}\protected@file@percent }
+\newlabel{fig:shap_patient0}{{9}{26}{SHAP waterfall plot for Patient 0, Predicted as AD}{figure.caption.38}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces SHAP waterfall plot for Patient 1, Predicted as AD.}}{27}{figure.caption.39}\protected@file@percent }
+\newlabel{fig:shap_patient1}{{10}{27}{SHAP waterfall plot for Patient 1, Predicted as AD}{figure.caption.39}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {6.6.2}Grad-CAM Visualisation}{27}{subsubsection.6.6.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces Grad-CAM explanation for patient 519 (sagittal slice). Left: original MRI brain scan. Middle: raw Grad-CAM heatmap. Right: overlay showing regions driving the prediction. The heatmap reveals that the highest activation areas (red/yellow) are concentrated almost exclusively along the outer edges of the image frame and the background, rather than on internal brain structures. This peripheral pattern suggests that the 3D ResNet is primarily capturing acquisition artifacts or noise instead of AD-relevant biomarkers (e.g., hippocampus). This clear lack of focus on anatomical features provides a visual rationale for the negligible modality weight ($\approx 1\%$) assigned to the imaging branch by the boosting algorithm.}}{27}{figure.caption.40}\protected@file@percent }
+\newlabel{fig:gradcam_patient}{{11}{27}{Grad-CAM explanation for patient 519 (sagittal slice). Left: original MRI brain scan. Middle: raw Grad-CAM heatmap. Right: overlay showing regions driving the prediction. The heatmap reveals that the highest activation areas (red/yellow) are concentrated almost exclusively along the outer edges of the image frame and the background, rather than on internal brain structures. This peripheral pattern suggests that the 3D ResNet is primarily capturing acquisition artifacts or noise instead of AD-relevant biomarkers (e.g., hippocampus). This clear lack of focus on anatomical features provides a visual rationale for the negligible modality weight ($\approx 1\%$) assigned to the imaging branch by the boosting algorithm}{figure.caption.40}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.7}Modality Contribution Analysis}{27}{subsection.6.7}\protected@file@percent }
+\newlabel{sec:modality_weights}{{6.7}{27}{Modality Contribution Analysis}{subsection.6.7}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {12}{\ignorespaces Modality weight distribution (\% of total $\alpha $, 5-fold average).}}{28}{table.caption.41}\protected@file@percent }
+\newlabel{tab:modality_weights}{{12}{28}{Modality weight distribution (\% of total $\alpha $, 5-fold average)}{table.caption.41}{}}
+\@writefile{toc}{\contentsline {paragraph}{Modality weights under cost-sensitive training.}{28}{section*.42}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {13}{\ignorespaces Modality weight distribution for cost-sensitive training (exp16, \% of total $\alpha $ per fold).}}{28}{table.caption.43}\protected@file@percent }
+\newlabel{tab:modality_weights_cost}{{13}{28}{Modality weight distribution for cost-sensitive training (exp16, \% of total $\alpha $ per fold)}{table.caption.43}{}}
+\@writefile{toc}{\contentsline {paragraph}{Discussion: Imaging quality and cost-sensitive performance.}{28}{section*.44}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Conclusions and Future Work}{29}{section.7}\protected@file@percent }
+\newlabel{sec:conclusions}{{7}{29}{Conclusions and Future Work}{section.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Summary}{29}{subsection.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Limitations}{29}{subsection.7.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.3}Synthesis and Future Directions}{29}{subsection.7.3}\protected@file@percent }
+\bibstyle{plainnat}
+\bibdata{references}
+\bibcite{alzheimer2023facts}{{1}{2023}{{Alzheimer's Association}}{{}}}
+\bibcite{buttaro2025}{{2}{2025}{{Buttaro et~al.}}{{Buttaro, Lamanna, Massaro, Caporusso, Pio, Ceci, and Initiative}}}
+\bibcite{crispdm2000}{{3}{2000}{{Chapman et~al.}}{{Chapman, Clinton, Kerber, et~al.}}}
+\bibcite{chen2019medicalnet}{{4}{2019}{{Chen et~al.}}{{Chen, Ma, and Zheng}}}
+\bibcite{elkan2001ijai}{{5}{2001}{{Elkan}}{{}}}
+\bibcite{gal2016dropout}{{6}{2016}{{Gal and Ghahramani}}{{}}}
+\bibcite{guo2017calibration}{{7}{2017}{{Guo et~al.}}{{Guo, Pleiss, Sun, and Weinberger}}}
+\bibcite{jack2008adni}{{8}{2008}{{Jack et~al.}}{{Jack, Bernstein, Fox, et~al.}}}
+\bibcite{lundberg2017shap}{{9}{2017}{{Lundberg and Lee}}{{}}}
+\bibcite{niculescu2005calibration}{{10}{2005}{{Niculescu-Mizil and Caruana}}{{}}}
+\bibcite{papadopoulos2002icp}{{11}{2002}{{Papadopoulos et~al.}}{{Papadopoulos, Proedrou, Vovk, and Gammerman}}}
+\bibcite{petersen2014mci}{{12}{2014}{{Petersen}}{{}}}
+\bibcite{selvaraju2017gradcam}{{13}{2017}{{Selvaraju et~al.}}{{Selvaraju, Cogswell, Das, Vedantam, Parikh, and Batra}}}
+\bibcite{vanDyck2023lecanemab}{{14}{2023}{{van Dyck et~al.}}{{van Dyck, Swanson, Aisen, et~al.}}}
+\bibcite{vovk2005algorithmic}{{15}{2005}{{Vovk et~al.}}{{Vovk, Gammerman, and Shafer}}}
+\bibcite{zadrozny2002kdd}{{16}{2002}{{Zadrozny and Elkan}}{{}}}
+\gdef \@abspage@last{31}

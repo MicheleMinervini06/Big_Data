@@ -1,0 +1,113 @@
+\begin{thebibliography}{16}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[{Alzheimer's Association}(2023)]{alzheimer2023facts}
+{Alzheimer's Association}.
+\newblock 2023 {Alzheimer's} disease facts and figures.
+\newblock \emph{Alzheimer's \& Dementia}, 19\penalty0 (4):\penalty0 1598--1695,
+  2023.
+
+\bibitem[Buttaro et~al.(2025)Buttaro, Lamanna, Massaro, Caporusso, Pio, Ceci,
+  and Initiative]{buttaro2025}
+Veronica Buttaro, Giuseppe Lamanna, Donato Massaro, Claudio~B Caporusso,
+  Gianvito Pio, Michelangelo Ceci, and Alzheimer’s Disease~Neuroimaging
+  Initiative.
+\newblock A novel ai approach for the diagnosis of alzheimer’s disease from
+  multi-modal incomplete data.
+\newblock In \emph{International Conference on Discovery Science}, pages
+  555--570. Springer, 2025.
+
+\bibitem[Chapman et~al.(2000)Chapman, Clinton, Kerber, et~al.]{crispdm2000}
+Pete Chapman, Julian Clinton, Randy Kerber, et~al.
+\newblock {CRISP-DM} 1.0: Step-by-step data mining guide.
+\newblock Technical report, SPSS Inc., 2000.
+
+\bibitem[Chen et~al.(2019)Chen, Ma, and Zheng]{chen2019medicalnet}
+Sihong Chen, Kai Ma, and Yefeng Zheng.
+\newblock {Med3D}: Transfer learning for {3D} medical image analysis.
+\newblock \emph{arXiv preprint arXiv:1904.00625}, 2019.
+
+\bibitem[Elkan(2001)]{elkan2001ijai}
+Charles Elkan.
+\newblock The foundations of cost-sensitive learning.
+\newblock In \emph{International Joint Conference on Artificial Intelligence
+  (IJCAI)}, pages 973--978, 2001.
+
+\bibitem[Gal and Ghahramani(2016)]{gal2016dropout}
+Yarin Gal and Zoubin Ghahramani.
+\newblock Dropout as a {Bayesian} approximation: Representing model uncertainty
+  in deep learning.
+\newblock In \emph{International Conference on Machine Learning (ICML)}, pages
+  1050--1059, 2016.
+
+\bibitem[Guo et~al.(2017)Guo, Pleiss, Sun, and Weinberger]{guo2017calibration}
+Chuan Guo, Geoff Pleiss, Yu~Sun, and Kilian~Q Weinberger.
+\newblock On calibration of modern neural networks.
+\newblock In \emph{International Conference on Machine Learning (ICML)}, pages
+  1321--1330, 2017.
+
+\bibitem[Jack et~al.(2008)Jack, Bernstein, Fox, et~al.]{jack2008adni}
+Clifford~R Jack, Matt~A Bernstein, Nick~C Fox, et~al.
+\newblock The {Alzheimer's Disease Neuroimaging Initiative (ADNI)}: {MRI}
+  methods.
+\newblock \emph{Journal of Magnetic Resonance Imaging}, 27\penalty0
+  (4):\penalty0 685--691, 2008.
+
+\bibitem[Lundberg and Lee(2017)]{lundberg2017shap}
+Scott~M Lundberg and Su-In Lee.
+\newblock A unified approach to interpreting model predictions.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, pages 4765--4774, 2017.
+
+\bibitem[Niculescu-Mizil and Caruana(2005)]{niculescu2005calibration}
+Alexandru Niculescu-Mizil and Rich Caruana.
+\newblock Predicting good probabilities with supervised learning.
+\newblock In \emph{International Conference on Machine Learning (ICML)}, pages
+  625--632, 2005.
+
+\bibitem[Papadopoulos et~al.(2002)Papadopoulos, Proedrou, Vovk, and
+  Gammerman]{papadopoulos2002icp}
+Harris Papadopoulos, Kostas Proedrou, Volodya Vovk, and Alex Gammerman.
+\newblock Inductive confidence machines for regression.
+\newblock In \emph{European Conference on Machine Learning (ECML)}, pages
+  345--356, 2002.
+
+\bibitem[Petersen(2014)]{petersen2014mci}
+Ronald~C Petersen.
+\newblock Mild cognitive impairment as a diagnostic entity.
+\newblock \emph{Journal of Internal Medicine}, 256\penalty0 (3):\penalty0
+  183--194, 2014.
+
+\bibitem[Selvaraju et~al.(2017)Selvaraju, Cogswell, Das, Vedantam, Parikh, and
+  Batra]{selvaraju2017gradcam}
+Ramprasaath~R Selvaraju, Michael Cogswell, Abhishek Das, Ramakrishna Vedantam,
+  Devi Parikh, and Dhruv Batra.
+\newblock {Grad-CAM}: Visual explanations from deep networks via gradient-based
+  localization.
+\newblock In \emph{IEEE International Conference on Computer Vision (ICCV)},
+  pages 618--626, 2017.
+
+\bibitem[van Dyck et~al.(2023)van Dyck, Swanson, Aisen,
+  et~al.]{vanDyck2023lecanemab}
+Christopher~H van Dyck, Chad~J Swanson, Paul Aisen, et~al.
+\newblock Lecanemab in early {Alzheimer's} disease.
+\newblock \emph{New England Journal of Medicine}, 388\penalty0 (1):\penalty0
+  9--21, 2023.
+
+\bibitem[Vovk et~al.(2005)Vovk, Gammerman, and Shafer]{vovk2005algorithmic}
+Vladimir Vovk, Alex Gammerman, and Glenn Shafer.
+\newblock \emph{Algorithmic Learning in a Random World}.
+\newblock Springer, 2005.
+
+\bibitem[Zadrozny and Elkan(2002)]{zadrozny2002kdd}
+Bianca Zadrozny and Charles Elkan.
+\newblock Transforming classifier scores into accurate multiclass probability
+  estimates.
+\newblock In \emph{ACM SIGKDD International Conference on Knowledge Discovery
+  and Data Mining}, pages 694--699, 2002.
+
+\end{thebibliography}

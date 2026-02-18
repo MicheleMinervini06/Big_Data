@@ -1,0 +1,74 @@
+\babel@toc {english}{}\relax 
+\contentsline {section}{\numberline {1}Introduction}{4}{section.1}%
+\contentsline {paragraph}{Contributions.}{4}{section*.2}%
+\contentsline {section}{\numberline {2}Business Understanding}{4}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Problem Definition}{4}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Success Criteria}{5}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Risk Assessment}{5}{subsection.2.3}%
+\contentsline {section}{\numberline {3}Data Understanding}{6}{section.3}%
+\contentsline {subsection}{\numberline {3.1}The ADNI Dataset}{6}{subsection.3.1}%
+\contentsline {paragraph}{Clinical Data (EHR).}{6}{section*.3}%
+\contentsline {paragraph}{Imaging Data (3D MRI).}{6}{section*.4}%
+\contentsline {paragraph}{Diagnostic Labels.}{6}{section*.5}%
+\contentsline {subsection}{\numberline {3.2}Exploratory Analysis}{7}{subsection.3.2}%
+\contentsline {paragraph}{Dataset composition and class distribution.}{7}{section*.7}%
+\contentsline {paragraph}{Missing values and feature quality.}{7}{section*.9}%
+\contentsline {paragraph}{Clinical feature distributions across diagnostic classes.}{8}{section*.10}%
+\contentsline {paragraph}{Brain volumetric biomarkers.}{9}{section*.12}%
+\contentsline {paragraph}{Feature correlations.}{10}{section*.14}%
+\contentsline {subsection}{\numberline {3.3}Data Quality and Missing Modalities}{11}{subsection.3.3}%
+\contentsline {section}{\numberline {4}Data Preparation}{11}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Clinical Data Pipeline}{11}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}MRI Image Pipeline}{12}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Data Augmentation for MRI}{12}{subsection.4.3}%
+\contentsline {paragraph}{Anti-leakage strategy.}{13}{section*.16}%
+\contentsline {subsection}{\numberline {4.4}Cross-Validation and Data Splits}{13}{subsection.4.4}%
+\contentsline {section}{\numberline {5}Modeling}{13}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Architecture Overview}{13}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Clinical Branch: Random Forest}{13}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Imaging Branch: VeroResNet}{14}{subsection.5.3}%
+\contentsline {subsubsection}{\numberline {5.3.1}Architecture Details}{14}{subsubsection.5.3.1}%
+\contentsline {subsubsection}{\numberline {5.3.2}Transfer Learning and Fine-Tuning}{14}{subsubsection.5.3.2}%
+\contentsline {subsection}{\numberline {5.4}Multimodal Boosting: IRBoostSH}{14}{subsection.5.4}%
+\contentsline {subsubsection}{\numberline {5.4.1}Algorithm Description}{14}{subsubsection.5.4.1}%
+\contentsline {subsubsection}{\numberline {5.4.2}Handling Missing Modalities}{15}{subsubsection.5.4.2}%
+\contentsline {subsubsection}{\numberline {5.4.3}Prediction Aggregation}{15}{subsubsection.5.4.3}%
+\contentsline {subsubsection}{\numberline {5.4.4}Cost-Sensitive Boosting}{15}{subsubsection.5.4.4}%
+\contentsline {subsection}{\numberline {5.5}Uncertainty Quantification}{16}{subsection.5.5}%
+\contentsline {subsubsection}{\numberline {5.5.1}Epistemic Uncertainty: Monte Carlo Dropout}{16}{subsubsection.5.5.1}%
+\contentsline {subsubsection}{\numberline {5.5.2}Aleatoric Uncertainty: Test-Time Augmentation}{16}{subsubsection.5.5.2}%
+\contentsline {subsubsection}{\numberline {5.5.3}Distribution-Free Uncertainty: Inductive Conformal Prediction}{17}{subsubsection.5.5.3}%
+\contentsline {paragraph}{Procedure.}{17}{section*.20}%
+\contentsline {subsection}{\numberline {5.6}Probability Calibration}{18}{subsection.5.6}%
+\contentsline {subsubsection}{\numberline {5.6.1}Isotonic Regression}{18}{subsubsection.5.6.1}%
+\contentsline {subsubsection}{\numberline {5.6.2}Temperature Scaling}{18}{subsubsection.5.6.2}%
+\contentsline {subsubsection}{\numberline {5.6.3}Calibration Metrics}{18}{subsubsection.5.6.3}%
+\contentsline {subsection}{\numberline {5.7}Cost-Sensitive Decision Making}{19}{subsection.5.7}%
+\contentsline {paragraph}{Sensitivity analysis.}{19}{section*.21}%
+\contentsline {subsection}{\numberline {5.8}Explainability}{19}{subsection.5.8}%
+\contentsline {subsubsection}{\numberline {5.8.1}SHAP for Clinical Features}{19}{subsubsection.5.8.1}%
+\contentsline {subsubsection}{\numberline {5.8.2}Grad-CAM for Brain Imaging}{19}{subsubsection.5.8.2}%
+\contentsline {section}{\numberline {6}Evaluation}{19}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Experimental Setup}{19}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Classification Performance}{20}{subsection.6.2}%
+\contentsline {paragraph}{Note on Data Augmentation.}{20}{section*.24}%
+\contentsline {subsection}{\numberline {6.3}Calibration Analysis}{20}{subsection.6.3}%
+\contentsline {subsection}{\numberline {6.4}Baseline + Calibration vs.\ Cost-Sensitive Training}{22}{subsection.6.4}%
+\contentsline {paragraph}{Discussion.}{23}{section*.29}%
+\contentsline {subsection}{\numberline {6.5}Uncertainty Quantification Results}{24}{subsection.6.5}%
+\contentsline {subsubsection}{\numberline {6.5.1}MC Dropout (Epistemic)}{24}{subsubsection.6.5.1}%
+\contentsline {subsubsection}{\numberline {6.5.2}TTA (Aleatoric)}{24}{subsubsection.6.5.2}%
+\contentsline {paragraph}{Analysis: Ensemble stability and heuristic uncertainty limitations.}{24}{section*.32}%
+\contentsline {subsubsection}{\numberline {6.5.3}Conformal Prediction}{25}{subsubsection.6.5.3}%
+\contentsline {paragraph}{Clinical Utility of Conformal Prediction Sets.}{25}{section*.34}%
+\contentsline {subsection}{\numberline {6.6}Explainability Analysis}{25}{subsection.6.6}%
+\contentsline {subsubsection}{\numberline {6.6.1}SHAP Feature Importance}{25}{subsubsection.6.6.1}%
+\contentsline {paragraph}{Individual Patient Explanations.}{26}{section*.37}%
+\contentsline {subsubsection}{\numberline {6.6.2}Grad-CAM Visualisation}{27}{subsubsection.6.6.2}%
+\contentsline {subsection}{\numberline {6.7}Modality Contribution Analysis}{27}{subsection.6.7}%
+\contentsline {paragraph}{Modality weights under cost-sensitive training.}{28}{section*.42}%
+\contentsline {paragraph}{Discussion: Imaging quality and cost-sensitive performance.}{28}{section*.44}%
+\contentsline {section}{\numberline {7}Conclusions and Future Work}{29}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Summary}{29}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Limitations}{29}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Synthesis and Future Directions}{29}{subsection.7.3}%
