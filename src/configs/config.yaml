@@ -1,6 +1,6 @@
 exp1:
   id: 1
-  train: true 
+  train: false 
   params:
     epochs: 50
     mb_size_train: 8  
@@ -13,7 +13,7 @@ exp2:
   train: true
   params:
     epochs: 50
-    mb_size_train: 15
+    mb_size_train: 20
     n_iteration: 10
     frezze_layer: 3
     mod: null
@@ -23,7 +23,7 @@ exp3:
   train: true
   params:
     epochs: 1
-    mb_size_train: 15
+    mb_size_train: 20
     n_iteration: 1
     frezze_layer: 2
     mod: 'clinical'
@@ -33,7 +33,7 @@ exp4:
   train: true
   params:
     epochs: 50
-    mb_size_train: 15
+    mb_size_train: 20
     n_iteration: 1
     frezze_layer: 2
     mod: 'images'
@@ -43,7 +43,7 @@ exp5:
   train: true
   params:
     epochs: 50
-    mb_size_train: 15
+    mb_size_train: 20
     n_iteration: 1
     frezze_layer: 3
     mod: 'images'
@@ -53,7 +53,7 @@ exp6:
   train: true
   params:
     epochs: 50
-    mb_size_train: 15
+    mb_size_train: 20
     n_iteration: 10
     frezze_layer: 2
     mod: null
@@ -77,7 +77,7 @@ exp8:
 
 exp9:
   id: 9
-  train: true
+  train: false
   params:
     epochs: 50
     mb_size_train: 8
@@ -120,8 +120,102 @@ exp12:
     epochs: 50
     mb_size_train: 8
     n_iteration: 10
-    frezze_layer: 2    
+    frezze_layer: 2
 
+exp13:
+  id: 13
+  train: false 
+  params:
+    epochs: 50
+    mb_size_train: 8
+    n_iteration: 10
+    frezze_layer: 2          
+    use_conformal: true  # Conformal Prediction for guaranteed UQ
+    conformal_alpha: 0.1  # 90% coverage guarantee
+    apply_temperature_scaling: true  # Temperature Scaling for CNN calibration
+    apply_isotonic_regression: true # Isotonic Regression for calibration
+    use_cost_sensitive: true  # Cost-sensitive learning to handle class imbalance
+
+exp14:
+  id: 14
+  train: false
+  reuse_from: exp13  # Riusa modelli da exp13
+  params:
+    epochs: 50
+    mb_size_train: 8
+    n_iteration: 10
+    frezze_layer: 2
+    use_conformal: true  # Conformal Prediction for guaranteed UQ
+    conformal_alpha: 0.1
+    apply_temperature_scaling: false  # No calibration on loaded model
+    apply_isotonic_regression: false  # No isotonic regression 
+    use_cost_sensitive: true  # Solo cost-sensitive decision making
+
+exp15:
+  id: 15
+  train: false
+  reuse_from: exp13  # Riusa modelli da exp13
+  params:
+    epochs: 50
+    mb_size_train: 8
+    n_iteration: 10
+    frezze_layer: 2
+    use_conformal: true  # Conformal Prediction for guaranteed UQ
+    conformal_alpha: 0.1
+    apply_temperature_scaling: true   
+    apply_isotonic_regression: true 
+    use_cost_sensitive: true             
+    aggressive_costs: true  # Cost-sensitive with more aggressive penalties for false negatives
+    cost_scale: 10.0  # Scale up cost penalties
+
+exp16:
+  id: 16
+  train: false  # TRAINING with cost-sensitive optimization + full pipeline
+  params:
+    epochs: 50
+    mb_size_train: 8
+    n_iteration: 10
+    frezze_layer: 2
+    mod: null
+    train_cost_sensitive: true  # Minimize clinical costs during training
+    use_conformal: true  # Conformal Prediction for guaranteed UQ
+    conformal_alpha: 0.1
+    apply_temperature_scaling: true  # Temperature Scaling for CNN calibration
+    apply_isotonic_regression: true  # Isotonic Regression for calibration
+    use_cost_sensitive: true  # Cost-sensitive decision making (adds post-processing)
+
+exp17:
+  id: 17
+  train: false  # Reuse trained model from exp16
+  reuse_from: exp16
+  params:
+    epochs: 50
+    mb_size_train: 8
+    n_iteration: 10
+    frezze_layer: 2
+    mod: null
+    train_cost_sensitive: false  # Model already trained with cost minimization
+    use_conformal: true
+    conformal_alpha: 0.1
+    apply_temperature_scaling: true
+    apply_isotonic_regression: true
+    use_cost_sensitive: false  # ONLY argmax - no cost-sensitive decision
+
+exp18:
+  id: 18
+  train: false  # Reuse standard trained model from exp13
+  reuse_from: exp13
+  params:
+    epochs: 50
+    mb_size_train: 8
+    n_iteration: 10
+    frezze_layer: 2
+    train_cost_sensitive: false
+    use_conformal: true
+    conformal_alpha: 0.1
+    apply_temperature_scaling: true
+    apply_isotonic_regression: true
+    use_cost_sensitive: false  # Pure baseline: standard training + argmax
 
 # Experiment suites for comparison
 experiment_suites:
