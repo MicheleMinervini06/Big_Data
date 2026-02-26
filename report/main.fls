@@ -1,6 +1,6 @@
-PWD C:\Users\mikim\Desktop\Uni\Big Data\Big_Data\report
+PWD c:\Users\mikim\Desktop\Uni\Big Data\Big_Data\report
 INPUT C:\Users\mikim\AppData\Local\MiKTeX\miktex\data\le\pdftex\pdflatex.fmt
-INPUT main.tex
+INPUT c:\Users\mikim\Desktop\Uni\Big Data\Big_Data\report\main.tex
 OUTPUT main.log
 INPUT C:\Users\mikim\AppData\Local\Programs\MiKTeX\tex\latex\base\article.cls
 INPUT C:\Users\mikim\AppData\Local\Programs\MiKTeX\tex\latex\base\article.cls
@@ -248,6 +248,15 @@ INPUT C:\Users\mikim\AppData\Local\Programs\MiKTeX\tex\latex\enumitem\enumitem.s
 INPUT C:\Users\mikim\AppData\Local\Programs\MiKTeX\tex\latex\enumitem\enumitem.sty
 INPUT C:\Users\mikim\AppData\Local\Programs\MiKTeX\tex\latex\natbib\natbib.sty
 INPUT C:\Users\mikim\AppData\Local\Programs\MiKTeX\tex\latex\natbib\natbib.sty
+INPUT C:\Users\mikim\AppData\Local\Programs\MiKTeX\tex\latex\siunitx\siunitx.sty
+INPUT C:\Users\mikim\AppData\Local\Programs\MiKTeX\tex\latex\siunitx\siunitx.sty
+INPUT C:\Users\mikim\AppData\Local\Programs\MiKTeX\tex\latex\translations\translations.sty
+INPUT C:\Users\mikim\AppData\Local\Programs\MiKTeX\tex\latex\translations\translations.sty
+INPUT C:\Users\mikim\AppData\Local\Programs\MiKTeX\tex\latex\tools\array.sty
+INPUT C:\Users\mikim\AppData\Local\Programs\MiKTeX\tex\latex\tools\array.sty
+INPUT C:\Users\mikim\AppData\Local\Programs\MiKTeX\tex\latex\gensymb\gensymb.sty
+INPUT C:\Users\mikim\AppData\Local\Programs\MiKTeX\tex\latex\gensymb\gensymb.sty
+INPUT C:\Users\mikim\AppData\Local\Programs\MiKTeX\tex\latex\graphics\color.sty
 INPUT C:\Users\mikim\AppData\Local\Programs\MiKTeX\tex\latex\l3backend\l3backend-pdftex.def
 INPUT C:\Users\mikim\AppData\Local\Programs\MiKTeX\tex\latex\l3backend\l3backend-pdftex.def
 INPUT .\main.aux
@@ -270,6 +279,9 @@ OUTPUT main.pdf
 INPUT .\main.out
 INPUT .\main.out
 OUTPUT main.out
+INPUT C:\Users\mikim\AppData\Local\Programs\MiKTeX\tex\latex\translations\dicts\translations-basic-dictionary-english.trsl
+INPUT C:\Users\mikim\AppData\Local\Programs\MiKTeX\tex\latex\translations\dicts\translations-basic-dictionary-english.trsl
+INPUT C:\Users\mikim\AppData\Local\Programs\MiKTeX\tex\latex\translations\dicts\translations-basic-dictionary-english.trsl
 INPUT C:\Users\mikim\AppData\Local\Programs\MiKTeX\fonts\tfm\jknappen\ec\ecrm1728.tfm
 INPUT C:\Users\mikim\AppData\Local\Programs\MiKTeX\fonts\tfm\jknappen\ec\ecbx1728.tfm
 INPUT C:\Users\mikim\AppData\Local\Programs\MiKTeX\fonts\tfm\jknappen\ec\ecrm1200.tfm
@@ -372,13 +384,6 @@ INPUT .\figures\calibration_improvement.png
 INPUT .\figures\calibration_improvement.png
 INPUT .\figures\calibration_improvement.png
 INPUT .\figures\calibration_improvement.png
-INPUT .\figures\reliability_calibrated.png
-INPUT .\figures\reliability_calibrated.png
-INPUT .\figures\reliability_calibrated.png
-INPUT .\figures\reliability_calibrated.png
-INPUT .\figures\reliability_calibrated.png
-INPUT .\figures\reliability_calibrated.png
-INPUT .\figures\reliability_calibrated.png
 INPUT .\figures\reliability_uncalibrated.png
 INPUT .\figures\reliability_uncalibrated.png
 INPUT .\figures\reliability_uncalibrated.png
@@ -386,6 +391,20 @@ INPUT .\figures\reliability_uncalibrated.png
 INPUT .\figures\reliability_uncalibrated.png
 INPUT .\figures\reliability_uncalibrated.png
 INPUT .\figures\reliability_uncalibrated.png
+INPUT .\figures\reliability_calibrated.png
+INPUT .\figures\reliability_calibrated.png
+INPUT .\figures\reliability_calibrated.png
+INPUT .\figures\reliability_calibrated.png
+INPUT .\figures\reliability_calibrated.png
+INPUT .\figures\reliability_calibrated.png
+INPUT .\figures\reliability_calibrated.png
+INPUT .\figures\shap_global_summary.png
+INPUT .\figures\shap_global_summary.png
+INPUT .\figures\shap_global_summary.png
+INPUT .\figures\shap_global_summary.png
+INPUT .\figures\shap_global_summary.png
+INPUT .\figures\shap_global_summary.png
+INPUT .\figures\shap_global_summary.png
 INPUT .\figures\shap_patient_0.png
 INPUT .\figures\shap_patient_0.png
 INPUT .\figures\shap_patient_0.png

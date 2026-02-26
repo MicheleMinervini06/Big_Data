@@ -2,7 +2,7 @@
 %  VERONECA: Multimodal Alzheimer's Classification with Uncertainty
 %  Quantification and Calibrated Clinical Decision Making
 %  ─────────────────────────────────────────────────────────────────
-%  Academic report – Big Data course, 2024/2025
+%  Academic report – Big Data course
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \documentclass[11pt,a4paper]{article}
 
@@ -25,10 +25,12 @@
 \usepackage[colorinlistoftodos,textsize=small]{todonotes}
 \usepackage{enumitem}
 \usepackage{url}
-\usepackage{natbib}
+\usepackage[numbers]{natbib}
+\usepackage{siunitx}
+\usepackage{gensymb}
 
 \geometry{margin=2.5cm}
-
+ 
 % ── Custom commands ───────────────────────────────────────────────
 \newcommand{\ie}{\textit{i.e.}}
 \newcommand{\eg}{\textit{e.g.}}
@@ -63,7 +65,7 @@ This work presents \veroneca{}, a multimodal machine-learning framework that int
 The architecture combines a fine-tuned 3D ResNet-18 convolutional neural network for volumetric brain imaging with a Random Forest classifier for tabular clinical features, fused through \texttt{IRBoostSH} (an Implicit Randomization Boosting with Shared Weights algorithm based on multi-armed bandit modality selection).
 Beyond classification, we implement a comprehensive uncertainty quantification pipeline using Monte Carlo Dropout for epistemic uncertainty estimation, clinically-grounded Test-Time Augmentation for aleatoric uncertainty, and Inductive Conformal Prediction providing distribution-free coverage guarantees.
 
-Probability calibration via Isotonic Regression is followed by a cost-sensitive Bayesian decision rule that accounts for the asymmetric clinical severity of misdiagnosis errors.
+Probability calibration via Isotonic Regression ensures alignment between predicted confidence and empirical accuracy, while a cost-sensitive Bayesian decision rule is investigated to account for the asymmetric clinical severity of misdiagnosis errors.
 Extensive experiments conducted under stratified 5-fold cross-validation on the Alzheimer's Disease Neuroimaging Initiative (ADNI) dataset demonstrate that the \emph{Baseline~+~Calibration} strategy (standard boosting training followed by post-hoc Isotonic Regression calibration and argmax prediction) yields superior overall performance compared to cost-sensitive training, which tends to over-correct decision boundaries at the expense of global accuracy.
 Explainability is addressed through SHAP values for clinical feature attribution and Grad-CAM heatmaps for spatial localisation of discriminative brain regions.
 
@@ -78,16 +80,16 @@ Explainability is addressed through SHAP values for clinical feature attribution
 \label{sec:introduction}
 % ══════════════════════════════════════════════════════════════════
 
-Alzheimer's Disease (AD) is the most prevalent form of dementia, accounting for approximately 60/80\% of all dementia cases worldwide~\citep{alzheimer2023facts}.
+Alzheimer's Disease (AD) is the most prevalent form of dementia, accounting for approximately 60--80\% of all dementia cases worldwide~\citep{alzheimer2023facts}.
 It is characterised by a progressive deterioration of cognitive functions (including memory, language, and executive abilities) that ultimately leads to complete functional dependency.
-The disease follows a clinical continuum: patients typically transition from a Cognitively Normal (CN) state through Mild Cognitive Impairment (MCI) ("an intermediate stage with measurable cognitive decline but preserved daily functioning") before progressing to overt AD dementia.
+The disease follows a clinical continuum: patients typically transition from a Cognitively Normal (CN) state through Mild Cognitive Impairment (MCI)---an intermediate stage with measurable cognitive decline but preserved daily functioning---before progressing to overt AD dementia.
 
 Early and accurate identification of the disease stage is paramount for several reasons.
 First, emerging disease-modifying therapies have shown the greatest efficacy when administered during prodromal stages~\citep{vanDyck2023lecanemab}.
 Second, correct staging informs prognosis and enables timely care planning for patients and families.
 Third, the differential diagnosis between MCI and early AD remains inherently challenging even for experienced clinicians, given the substantial overlap in neuropsychological profiles and imaging biomarkers~\citep{petersen2014mci}.
 
-Current clinical diagnosis relies on a combination of cognitive assessments (\eg, Mini-Mental State Examination "MMSE", Alzheimer's Disease Assessment Scale "ADAS"), cerebrospinal fluid biomarkers, and structural neuroimaging.
+Current clinical diagnosis relies on a combination of cognitive assessments (\eg, the Mini-Mental State Examination [MMSE] and the Alzheimer's Disease Assessment Scale [ADAS]), cerebrospinal fluid biomarkers, and structural neuroimaging.
 However, each individual modality offers only a partial view: cognitive scores are susceptible to floor and ceiling effects, biomarker assays exhibit non-negligible measurement variability, and visual inspection of MRI scans is subjective and time-consuming.
 A multimodal approach that systematically integrates heterogeneous data sources is therefore a natural path toward more robust and reliable diagnostic systems.
 
@@ -114,6 +116,7 @@ Finally, Section~\ref{sec:conclusions} provides Conclusions and directions for F
 
 
 % ══════════════════════════════════════════════════════════════════
+\newpage
 \section{Business Understanding}
 \label{sec:business}
 % ══════════════════════════════════════════════════════════════════
@@ -126,7 +129,7 @@ The overarching goal is to develop a \emph{clinically-aware} Computer-Aided Diag
     \item Provides \emph{calibrated probability estimates} that faithfully reflect the true likelihood of each diagnostic outcome.
     \item Quantifies prediction uncertainty at the individual patient level, enabling clinicians to identify cases requiring further review.
     \item Incorporates domain knowledge about the \emph{asymmetric costs} of different misclassification types in a principled decision-making framework.
-    \item Supports interpetability of the model's predictions, through visual explanations (SHAP plots and Grad-CAM heatmaps).
+    \item Supports interpretability of the model's predictions through visual explanations (SHAP plots and Grad-CAM heatmaps).
 \end{itemize}
 
 \subsection{Success Criteria}
@@ -152,6 +155,7 @@ The principal risks identified at project inception are:
 
 
 % ══════════════════════════════════════════════════════════════════
+\newpage
 \section{Data Understanding}
 \label{sec:data_understanding}
 % ══════════════════════════════════════════════════════════════════
@@ -168,7 +172,7 @@ After removing columns with $>$90\% missing values, baseline-suffixed duplicates
 \begin{itemize}[leftmargin=*]
     \item \textbf{Demographics:} Age, gender, years of education, ethnicity.
     \item \textbf{Cognitive scores:} MMSE (Mini-Mental State Examination), ADAS11 and ADAS13 (Alzheimer's Disease Assessment Scale), RAVLT (Rey Auditory Verbal Learning Test) sub-scores (immediate, learning, forgetting, percent forgetting), LDELTOTAL (Logical Memory delayed recall), DIGITSCOR (digit span), TRABSCOR (trail-making test).
-    \item \textbf{Functional assessments:} FAQ (Functional Activities Questionnaire), EcogPt and EcogSP scores (Everyday Cognition "patient and study partner versions") across Memory, Language, Visuospatial, Planning, Attention, and Organization domains.
+    \item \textbf{Functional assessments:} FAQ (Functional Activities Questionnaire), EcogPt and EcogSP scores (Everyday Cognition (patient and study partner versions)) across Memory, Language, Visuospatial, Planning, Attention, and Organization domains.
     \item \textbf{Neuroimaging-derived volumetric measures:} Ventricles and Entorhinal volumes are retained in the clinical dataset after filtering, while other volumetric measures (Hippocampus, WholeBrain, Fusiform, MidTemp, ICV) are excluded.
 \end{itemize}
 
@@ -196,7 +200,7 @@ Records with missing diagnosis are excluded.
 Administrative & \texttt{RID}, \texttt{SITE}, \texttt{COLPROT}, \texttt{ORIGPROT}, \texttt{EXAMDATE}, \texttt{update\_stamp} \\
 Biomarkers & \texttt{ABETA}, \texttt{TAU}, \texttt{PTAU}, \texttt{FDG}, \texttt{PIB}, \texttt{AV45} \\
 Genetics & \texttt{APOE4}, \texttt{PTRACCAT}, \texttt{PTETHCAT} \\
-Neuroimaging & \texttt{Hippocampus}, \texttt{WholeBrain}, \texttt{Enthorhinal}, \texttt{Fusiform}, \texttt{MidTemp}, \texttt{ICV} \\
+Neuroimaging & \texttt{Hippocampus}, \texttt{WholeBrain}, \texttt{Entorhinal}, \texttt{Fusiform}, \texttt{MidTemp}, \texttt{ICV} \\
 Scales & \texttt{CDRSB}, \texttt{EcoPtMem}, \texttt{FSVERSION} \\
 Months & \texttt{M} \\
 Baseline suffixed & All columns with \texttt{\_bl} / \texttt{\_BL} suffix \\
@@ -220,7 +224,7 @@ Figure~\ref{fig:class_distribution} shows the diagnostic distribution among subj
 
 \paragraph{Missing values and feature quality.}
 Following the 90\% missingness threshold filtering, the retained clinical features exhibit varying but acceptable levels of missing data.
-Higher missingness rates (40/60\%) are observed primarily in neuropsychological test subscales (\eg, RAVLT components, EcogSP domain scores) and composite cognitive indices (\eg, mPACCdigit, mPACCtrailsB), reflecting the longitudinal study design and the gradual evolution of ADNI assessment protocols across cohorts and phases.
+Higher missingness rates (40--60\%) are observed primarily in neuropsychological test subscales (\eg, RAVLT components, EcogSP domain scores) and composite cognitive indices (\eg, mPACCdigit, mPACCtrailsB), reflecting the longitudinal study design and the gradual evolution of ADNI assessment protocols across cohorts and phases.
 Core demographic and functional measures (age, education, MMSE, FAQ) are nearly complete ($<$10\% missing).
 The Random Forest base learner handles residual missingness natively through surrogate splits, eliminating the need for explicit imputation.
 
@@ -230,7 +234,7 @@ The violin plots reveal distinct separation trends with varying degrees of overl
 \begin{itemize}
     \item \textbf{MMSE}: The CN class exhibits a strong ceiling effect, with scores heavily concentrated at the maximum (median $\approx$ 29/30). MCI subjects show broader variability (median $\approx$ 27), while the AD class displays a marked cognitive decline with a significantly lower and more dispersed distribution (median $\approx$ 22).
     \item \textbf{ADAS13 and FAQ}: Both metrics show a monotonic increase with disease progression. While ADAS13 shows a steady shift in medians (CN $\approx$ 9, MCI $\approx$ 18, AD $\approx$ 32), the \textbf{FAQ} scores are almost exclusively zero for the CN group, beginning to disperse slightly in MCI (median $\approx$ 2) before showing a drastic and highly variable increase in AD patients (median $\approx$ 16).
-    \item \textbf{Age}: The age distributions remain remarkably consistent across the three groups, with medians stable around \textbf{73/75 years}. This confirms that observed cognitive and volumetric differences are not confounded by age but purely reflect the pathological status.
+    \item \textbf{Age}: The age distributions remain remarkably consistent across the three groups, with medians stable around \textbf{73--75 years}. This confirms that observed cognitive and volumetric differences are not confounded by age but rather reflect the underlying pathological status.
 \end{itemize}
 
 \begin{figure}[H]
@@ -245,7 +249,7 @@ Figure~\ref{fig:brain_volumes} displays regional brain volumes (Hippocampus, Ven
 \begin{itemize}
     \item \textbf{Medial Temporal Lobe Atrophy}: A significant and progressive volumetric reduction is observed in the hippocampus and entorhinal cortex. The median hippocampal volume drops from approximately \textbf{7200 $mm^3$} in CN to roughly \textbf{5500 $mm^3$} in AD (a $\approx$ 23\% reduction), with MCI subjects occupying an intermediate range ($\approx$ 6800 $mm^3$). A similar trend is visible for the entorhinal area, though the separation between CN and MCI is more nuanced.
     \item \textbf{Ventricular Enlargement}: Ventricular volume shows a clear expansion. The median volume increases from $\approx$ 32,000 $mm^3$ (CN) to over 50,000 $mm^3$ (AD), representing an expansion exceeding 50\%. The high number of outliers and large variance in the AD class suggest a heterogeneous structural response in late-stage disease.
-    \item \textbf{MCI Heterogeneity}: MCI subjects exhibit distributions that broadly overlap both CN and AD ranges, reinforcing the status of this class as a clinical "limbo" and highlighting the necessity of multimodal integration to identify high-risk converters.
+    \item \textbf{MCI Heterogeneity}: MCI subjects exhibit distributions that broadly overlap both CN and AD ranges, reinforcing the status of this class as a clinical ``limbo'' and highlighting the necessity of multimodal integration to identify high-risk converters.
 \end{itemize}
 
 \begin{figure}[H]
@@ -276,6 +280,7 @@ This flexibility is critical for maximising sample utilisation in a real-world c
 
 
 % ══════════════════════════════════════════════════════════════════
+\newpage
 \section{Data Preparation}
 \label{sec:data_preparation}
 % ══════════════════════════════════════════════════════════════════
@@ -330,7 +335,7 @@ To address this, we implement a \emph{pre-computed} data augmentation strategy t
 The augmentation pipeline, implemented using the \texttt{albumentations} library, applies a composition of clinically-grounded transformations applied independently to each 2D slice of the 3D volume:
 
 \begin{itemize}[leftmargin=*]
-    \item \textbf{Rotation} ($\pm 10°$, $p=0.6$): simulates natural head movement during acquisition.
+    \item \textbf{Rotation} ($\pm 10\degree$, $p=0.6$): simulates natural head movement during acquisition.
     \item \textbf{Affine translation and scaling} ($\pm 5\%$ each, $p=0.4$): models patient positioning variability.
     \item \textbf{Elastic deformation} ($\alpha=30$, $\sigma=5$, $p=0.3$): mimics scanner field inhomogeneity and inter-subject anatomical variation.
     \item \textbf{Gaussian noise} ($\sigma \in [0.005, 0.015]$, $p=0.3$): emulates signal-to-noise ratio degradation.
@@ -358,6 +363,7 @@ This three-way split ensures that calibration and conformal thresholds are estim
 
 
 % ══════════════════════════════════════════════════════════════════
+\newpage
 \section{Modeling}
 \label{sec:modeling}
 % ══════════════════════════════════════════════════════════════════
@@ -557,7 +563,7 @@ For $N_{\text{tta}} = 10$ augmented versions of the clinical data, the ensemble 
     \text{Aleatoric UQ} = \text{Std}\!\left[\max_c \, p_n^{\text{tta}}(y=c \mid x) \right]_{n=1}^{N_{\text{tta}}}.
 \end{equation}
 
-Imaging data was not perturbed during TTA. Empirically, the boosting modality-weight analysis showed that the imaging branch contributed less than 1\% to the ensemble's cumulative prediction weight across boosting iterations; therefore, applying TTA to images would have negligible impact on ensemble uncertainty estimates while incurring substantial compute cost. For this reason we concentrated TTA on the clinical modality.
+Imaging data were not perturbed during TTA. Empirically, the boosting modality-weight analysis showed that the imaging branch contributed less than 1\% to the ensemble's cumulative prediction weight across boosting iterations; therefore, applying TTA to images would have negligible impact on ensemble uncertainty estimates while incurring substantial compute cost. For this reason we concentrated TTA on the clinical modality.
 
 \subsubsection{Distribution-Free Uncertainty: Inductive Conformal Prediction}
 \label{sec:conformal}
@@ -682,6 +688,7 @@ The 3D heatmap is upsampled to the original input resolution via trilinear inter
 
 
 % ══════════════════════════════════════════════════════════════════
+\newpage
 \section{Evaluation}
 \label{sec:evaluation}
 % ══════════════════════════════════════════════════════════════════
@@ -716,7 +723,9 @@ exp18 & Standard + Calib (argmax)      & & & & \checkmark & & \checkmark & \\
 \subsection{Classification Performance}
 
 Table~\ref{tab:classification_results} reports the classification performance for the key experimental configurations that differ in training strategy and produce measurable performance variation.
-Note that configurations that only modify inference-time behaviour without retraining (\eg, MC Dropout in exp8, cost-sensitive decision rule in exp13 vs.\ exp18) yield identical classification metrics to their corresponding baseline, since the final prediction is still based on argmax of the same underlying probability distribution; their distinct contributions are captured through uncertainty quantification (Section~\ref{sec:uq}) and calibration analysis (Section~\ref{sec:calibration}).
+Note that MC Dropout (exp8) produces classification metrics identical to the baseline (exp1), as averaging over stochastic forward passes does not alter the argmax prediction.
+Experiments involving the calibration split (exp13, exp16--exp18) train on 60\% of the data rather than 80\%, which accounts for the marginal performance difference relative to exp1.
+The distinct contributions of MC Dropout and TTA to uncertainty quantification are analysed in Section~\ref{sec:uq}.
 
 \begin{table}[H]
 \centering
@@ -736,7 +745,7 @@ CS Training + Calib + CP (exp16)         & 0.7822 & 0.7975 & 0.7838 & 0.7899 \\
 
 \paragraph{Note on Data Augmentation.}
 Given that preliminary analysis of the boosting algorithm's modality weights revealed minimal contribution from the imaging component (Section~\ref{sec:modality_weights}), we explored whether augmenting the training set with additional MRI samples could enhance the model's ability to leverage visual features.
-Specifically, we applied clinically-grounded data augmentation techniques as detalied in section \ref{sec:augmentation} to the MRI training data, effectively increasing the number of unique imaging samples available for training the ResNet branch.
+Specifically, we applied clinically-grounded data augmentation techniques as detailed in Section~\ref{sec:augmentation} to the MRI training data, effectively increasing the number of unique imaging samples available for training the ResNet branch.
 However, this strategy did not yield measurable improvements in classification performance.
 The lack of benefit suggests that the limited contribution of imaging features to the ensemble's predictions is not primarily due to insufficient training data, but rather reflects either inherent limitations in the 3D ResNet architecture's capacity to extract discriminative volumetric patterns from relatively small medical imaging datasets, or the dominant predictive power of clinical tabular features which already capture much of the variance relevant to disease staging.
 Consequently, the augmented training configuration is not included in the comparative analysis below.
@@ -774,13 +783,13 @@ NLL   & 0.5442 & 0.4479 & 0.0963 & 17.7\% \\
 \begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.48\linewidth}
-        \includegraphics[width=\linewidth]{figures/reliability_calibrated.png}
+        \includegraphics[width=\linewidth]{figures/reliability_uncalibrated.png}
         \caption{Before Isotonic Regression (ECE = 0.191).}
         \label{fig:reliability_before}
     \end{subfigure}
     \hfill
     \begin{subfigure}[b]{0.48\linewidth}
-        \includegraphics[width=\linewidth]{figures/reliability_uncalibrated.png}
+        \includegraphics[width=\linewidth]{figures/reliability_calibrated.png}
         \caption{After Isotonic Regression (ECE = 0.008).}
         \label{fig:reliability_after}
     \end{subfigure}
@@ -828,13 +837,13 @@ The experimental results strongly support the superiority of the Baseline~+~Cali
 
 \textbf{(1) Standard training dominates cost-sensitive training.}
 Exp18 achieves the highest accuracy (81.2\%) and F1-score (81.7\%), significantly outperforming cost-sensitive training configurations (exp16: 77.3\%, exp17: 78.0\%).
-This 4/5 percentage point degradation confirms that cost-sensitive boosting over-corrects decision boundaries, particularly harming classification of the ambiguous MCI class where feature distributions overlap with both CN and AD.
-The modified sample weight distribution forces the model to focus excessively on avoiding high-cost errors (e.g., AD$\to$CN), at the expense of overall discriminative power.
+This 3--4 percentage point degradation confirms that cost-sensitive boosting over-corrects decision boundaries, particularly harming classification of the ambiguous MCI class where feature distributions overlap with both CN and AD.
+The modified sample weight distribution forces the model to focus excessively on avoiding high-cost errors (\eg, AD$\to$CN), at the expense of overall discriminative power.
 
-\textbf{(2) Cost-sensitive inference fails to reduce clinical cost.}
-Counterintuitively, applying the cost-sensitive Bayesian decision rule (exp13) \emph{increases} mean clinical cost by 8.6\% relative to standard argmax inference (exp18: 0.100 vs.\ exp13: 0.108).
-This occurs because exp13 and exp18 share identical trained models and calibrated probabilities, only the final decision rule differs.
-The cost-sensitive rule shifts predictions toward more conservative diagnoses (e.g., upgrading CN$\to$MCI or MCI$\to$AD to avoid missing disease), but these shifts introduce \emph{new} misclassifications (false positives) whose costs outweigh the reduction in false negatives.
+\textbf{(2) Cost-sensitive inference degrades both accuracy and clinical cost.}
+Counterintuitively, applying the cost-sensitive Bayesian decision rule (exp13) reduces accuracy by approximately one percentage point (from 81.2\% to 80.3\%) while simultaneously \emph{increasing} mean clinical cost by 8.6\% relative to standard argmax inference (exp18: 0.100 vs.\ exp13: 0.108).
+This occurs because exp13 and exp18 share identical trained models and calibrated probabilities; only the final decision rule differs.
+The cost-sensitive rule shifts predictions toward more conservative diagnoses (\eg, upgrading CN$\to$MCI or MCI$\to$AD to avoid missing disease), but these shifts introduce \emph{new} misclassifications (false positives) whose costs outweigh the reduction in false negatives.
 Since the underlying probability estimates are already well-calibrated (ECE = 0.020), the argmax prediction is near-optimal, and further boundary shifting is counterproductive.
 
 \textbf{(3) Cost-sensitive training compounds the problem.}
@@ -842,7 +851,7 @@ Exp16, which combines cost-sensitive training with cost-sensitive inference, exh
 The cost-sensitive training distorts the learned probability distribution, and the subsequent cost-sensitive decision rule further exacerbates the misalignment, resulting in a compounding degradation effect.
 
 \textbf{(4) Calibration quality remains consistent.}
-All strategies achieve comparable post-calibration ECE (0.020/0.022), indicating that Isotonic Regression effectively corrects probability miscalibration regardless of the training regime.
+All strategies achieve comparable post-calibration ECE (0.020--0.022), indicating that Isotonic Regression effectively corrects probability miscalibration regardless of the training regime.
 However, calibration alone cannot recover the discriminative information lost during cost-sensitive training.
 
 
@@ -891,7 +900,7 @@ Moreover, both uncertainty measures exhibit weak or negative correlations with p
 This pattern is consistent across both modalities:
 \begin{itemize}[leftmargin=*]
     \item \textbf{Imaging branch (MC Dropout):} Even with dropout active during inference ($p=0.5$), the ensemble's weighted aggregation of multiple CNN predictions across boosting iterations produces highly consistent outputs. The CNN's contribution to the final ensemble is minimal ($<$1\%, Table~\ref{tab:modality_weights}), and its predictions are heavily filtered through the boosting weights $\alpha_t$, damping any residual stochasticity.
-    \item \textbf{Clinical branch (tree subsampling):} As noted in Section~\ref{sec:mcdo}, randomly subsampling 70\% of trees in the Random Forest produced variances concentrated near zero. This is inherent to the RF design: bagging over many weak learners is explicitly optimized to reduce variance, and the boosting framework further stabilizes predictions through weighted aggregation.
+    \item \textbf{Clinical branch (tree subsampling):} As noted in Section~\ref{sec:mcdo}, randomly subsampling 70\% of trees in the Random Forest produced variances concentrated near zero. This is inherent to the RF design: bagging over many weak learners is explicitly optimised to reduce variance, and the boosting framework further stabilizes predictions through weighted aggregation.
 \end{itemize}
 
 The fundamental issue is that \textbf{boosting ensembles, by design, suppress variance to maximize predictive accuracy}.
@@ -943,8 +952,8 @@ F1-macro  & 0.878 & 0.601 & +0.277 \\
 
 \begin{figure}[H]
     \centering
-    \fbox{\parbox{0.9\linewidth}{\centering\vspace{2.5cm}\textbf{Placeholder:} SHAP global importance bar chart (top 10 clinical features by mean absolute SHAP value).\vspace{2.5cm}}}
-    \caption{Global feature importance for the clinical modality: top 10 features ranked by mean absolute SHAP value across all test samples. Features such as MMSE, FAQ, and ADAS13 are expected to dominate.}
+    \includegraphics[width=0.95\linewidth]{figures/shap_global_summary.png}
+    \caption{Global feature importance for the clinical modality (Signed SHAP Summary Plot). The plot ranks the top 20 features by their mean absolute SHAP value across the test set. Each point represents an individual patient, with the color indicating the feature value (red for high, blue for low) and the horizontal position representing the impact on the model's output. The ranking highlights a combination of cognitive assessments (e.g., RAVLT subscales, mPACC indices, DIGITSCOR), structural biomarkers (Entorhinal and Ventricular volumes), and demographic factors (e.g., Marital status, Age), providing a comprehensive view of the features driving the clinical branch's decisions.}
     \label{fig:shap_global}
 \end{figure}
 
@@ -1032,13 +1041,14 @@ This redistribution suggests that when the boosting objective explicitly penalis
 
 \paragraph{Discussion: Imaging quality and cost-sensitive performance.}
 However, despite the increased modality weight, the cost-sensitive training configuration (exp16) ultimately achieves \emph{worse} overall performance than the baseline (Section~\ref{sec:baseline_vs_cost}): accuracy drops by $\approx$4 percentage points and mean clinical cost increases by 26\%.
-The Grad-CAM analysis (Figure~\ref{fig:gradcam}) revealed that the 3D ResNet fails to learn anatomically meaningful representations, focusing instead on peripheral artifacts and background noise rather than AD-relevant structures such as the hippocampus or entorhinal cortex.
+The Grad-CAM analysis (Figure~\ref{fig:gradcam_patient}) revealed that the 3D ResNet fails to learn anatomically meaningful representations, focusing instead on peripheral artifacts and background noise rather than AD-relevant structures such as the hippocampus or entorhinal cortex.
 
 This suggests a critical bottleneck: \textbf{while the cost-sensitive objective recognises the potential value of imaging data for reducing misclassification cost, the poor quality of the learned imaging representations prevents this potential from being realised.}
 The boosting algorithm upweights the CNN's predictions to compensate for high-cost errors, but because the CNN's features are spurious (artifact-driven rather than anatomy-driven), this upweighting introduces incorrect biases that degrade overall classification performance.
 
 
 % ══════════════════════════════════════════════════════════════════
+\newpage
 \section{Conclusions and Future Work}
 \label{sec:conclusions}
 % ══════════════════════════════════════════════════════════════════
@@ -1052,16 +1062,16 @@ This work presented an extension of the \veroneca{} multimodal framework for Alz
     \item \textbf{Post-hoc probability calibration} via Isotonic Regression, achieving an 89\% reduction in Expected Calibration Error (ECE) and ensuring that model confidence aligns with empirical accuracy.
     \item \textbf{Cost-sensitive clinical decision making} through a Bayesian decision rule and a domain-specific misclassification cost matrix, allowing the system to account for the asymmetric severity of diagnostic errors.
     \item \textbf{Explainability integration} using SHAP for clinical features and Grad-CAM for volumetric imaging, providing a transparent rationale for the ensemble's diagnostic output.
-    \item \textbf{Empirical strategy validation}: results demonstrate that a \emph{Baseline + Calibration} approach outperforms cost-sensitive training. While the latter successfully forces the model to prioritize high-risk cases, it currently lacks the imaging sample density required to generalize those decision boundary shifts effectively.
+    \item \textbf{Empirical strategy validation}: results demonstrate that a \emph{Baseline + Calibration} approach outperforms cost-sensitive training. While the latter successfully forces the model to prioritise high-risk cases, it currently lacks the imaging sample density required to generalise those decision boundary shifts effectively.
 \end{enumerate}
 
 \subsection{Limitations}
 
-Despite the robust framework, some limitations persist. The most significant is the \textbf{small imaging dataset} (76 unique subjects), which results in a clinical-dominated ensemble. While data augmentation was employed, this does not successfully increase the model performance. Furthermore, the \textbf{subjectivity of the cost matrix}, though clinically grounded, would benefit from wider consensus validation. Finally, the \textbf{calibration set size} (20\% of the data) may introduce variance in thresholds, particularly in smaller cross-validation folds.
+Despite the robust framework, some limitations persist. The most significant is the \textbf{small imaging dataset} (76 unique subjects), which results in a clinical-dominated ensemble. While data augmentation was employed, it did not deliver measurable performance improvements. Furthermore, the \textbf{subjectivity of the cost matrix}, though clinically grounded, would benefit from wider consensus validation. Finally, the \textbf{calibration set size} (20\% of the data) may introduce variance in thresholds, particularly in smaller cross-validation folds.
 
 \subsection{Synthesis and Future Directions}
 
-Another intresting result lies in the behavior of the cost-sensitive boosting algorithm. When tasked with minimizing clinical costs rather than simple error, the model adaptively shifted its modality weights from a 99\% clinical dominance to a nearly equal \textbf{50/50 split} between EHR and MRI data. 
+Another interesting result lies in the behaviour of the cost-sensitive boosting algorithm. When tasked with minimizing clinical costs rather than simple error, the model adaptively shifted its modality weights from a 99\% clinical dominance to a nearly equal \textbf{50/50 split} between EHR and MRI data. 
 
 This dramatic reweighting proves that the IRBoostSH logic correctly identifies structural imaging as a critical source of information for resolving high-risk diagnostic ambiguities. However, the subsequent drop in accuracy suggests that the imaging branch's signal quality is currently insufficient to support this increased responsibility. The current limitation, therefore, lies not in the algorithm's objective but in the \textbf{underfitted nature of the CNN} due to limited training data.
 
@@ -1080,6 +1090,13 @@ By bridging the gap between sophisticated cost-aware logic and high-quality imag
 % ══════════════════════════════════════════════════════════════════
 % BIBLIOGRAPHY
 % ══════════════════════════════════════════════════════════════════
+
+% --- Code repository ---
+\section*{Code and Data Availability}
+
+The code is available at \url{https://github.com/MicheleMinervini06/Big_Data}.
+
+
 \bibliographystyle{plainnat}
 \bibliography{references}
 
