@@ -98,16 +98,21 @@ def processing_features_cv():
         train_df = df_merge.loc[train_idx].reset_index(drop=True)
         test_df = df_merge.loc[test_idx].reset_index(drop=True)
 
+        # Prepare modality dictionaries, excluding empty image dataframes
+        X_train = {'clinical': train_df[clinical_cols]}
+        images_train = train_df[['image_path']].dropna()
+        if not images_train.empty:
+            X_train['images'] = images_train
+        
+        X_test = {'clinical': test_df[clinical_cols]}
+        images_test = test_df[['image_path']].dropna()
+        if not images_test.empty:
+            X_test['images'] = images_test
+
         fold_data = {
-            'X_train': {
-                'clinical': train_df[clinical_cols],
-                'images': train_df[['image_path']].dropna()
-            },
+            'X_train': X_train,
             'y_train': train_df["Label"],
-            'X_test': {
-                'clinical': test_df[clinical_cols],
-                'images': test_df[['image_path']].dropna()
-            },
+            'X_test': X_test,
             'y_test': test_df["Label"]
         }
 
@@ -200,16 +205,21 @@ def processing_features_cv_augmented(use_augmented=True):
         if 'group_id' in test_df.columns:
             test_df = test_df.drop(columns=['group_id'])
 
+        # Prepare modality dictionaries, excluding empty image dataframes
+        X_train = {'clinical': train_df[clinical_cols]}
+        images_train = train_df[['image_path']].dropna()
+        if not images_train.empty:
+            X_train['images'] = images_train
+        
+        X_test = {'clinical': test_df[clinical_cols]}
+        images_test = test_df[['image_path']].dropna()
+        if not images_test.empty:
+            X_test['images'] = images_test
+
         fold_data = {
-            'X_train': {
-                'clinical': train_df[clinical_cols],
-                'images': train_df[['image_path']].dropna()
-            },
+            'X_train': X_train,
             'y_train': train_df["Label"],
-            'X_test': {
-                'clinical': test_df[clinical_cols],
-                'images': test_df[['image_path']].dropna()
-            },
+            'X_test': X_test,
             'y_test': test_df["Label"]
         }
 
@@ -279,12 +289,28 @@ def processing_features_cv_with_calibration(use_augmented=False):
             if 'group_id' in df.columns:
                 df.drop(columns=['group_id'], inplace=True)
         
+        # Prepare modality dictionaries, excluding empty image dataframes
+        X_train = {'clinical': train_df[clinical_cols]}
+        images_train = train_df[['image_path']].dropna()
+        if not images_train.empty:
+            X_train['images'] = images_train
+        
+        X_calib = {'clinical': calib_df[clinical_cols]}
+        images_calib = calib_df[['image_path']].dropna()
+        if not images_calib.empty:
+            X_calib['images'] = images_calib
+        
+        X_test = {'clinical': test_df[clinical_cols]}
+        images_test = test_df[['image_path']].dropna()
+        if not images_test.empty:
+            X_test['images'] = images_test
+        
         fold_data = {
-            'X_train': {'clinical': train_df[clinical_cols], 'images': train_df[['image_path']].dropna()},
+            'X_train': X_train,
             'y_train': train_df["Label"],
-            'X_calib': {'clinical': calib_df[clinical_cols], 'images': calib_df[['image_path']].dropna()},
+            'X_calib': X_calib,
             'y_calib': calib_df["Label"],
-            'X_test': {'clinical': test_df[clinical_cols], 'images': test_df[['image_path']].dropna()},
+            'X_test': X_test,
             'y_test': test_df["Label"]
         }
         folds.append(fold_data)
