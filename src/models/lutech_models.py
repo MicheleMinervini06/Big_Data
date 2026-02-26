@@ -652,7 +652,7 @@ class IRBoostSH(BoostSH):
         self.sigma = sigma
         self.gamma = gamma
 
-    def fit(self, X, y,mod, forecast_cv=None, sample_weights=None):
+    def fit(self, X, y,mod, forecast_cv=None, sample_weights=None, cost_matrix=None):
         """
             Fit the model by adding models in a boosting fashion
 
@@ -661,12 +661,20 @@ class IRBoostSH(BoostSH):
                 y {pandas Series} -- Labels - Index has to be contained in modality union
                 forecast_cv {int} -- Number of fold used to estimate the edge
                     (default: None - Performance are computed on training set)
+                sample_weights -- Sample weights for AdaBoost-style training
+                cost_matrix -- Clinical cost matrix for cost-sensitive boosting (shape: n_classes x n_classes)
+                              If provided, minimizes clinical cost instead of maximizing edge
         """
         self.check_input(X, y)
         self.modalities = copy.deepcopy(X)
         self.classes = np.unique(y)
         K = len(self.modalities) 
         possible_modalities = list(self.modalities.keys())
+        
+        # Check if cost-sensitive training is enabled
+        use_cost_sensitive = cost_matrix is not None
+        if use_cost_sensitive:
+            print("\n[COST-SENSITIVE BOOSTING] Optimizing for minimum clinical cost instead of maximum edge\n")
 
         index = self.__index_union__(self.modalities)
         # print(f"index:{index}")
@@ -683,7 +691,6 @@ class IRBoostSH(BoostSH):
             
             print('')
             print(f'irBoost.SH training: Iteration {t+1}/{self.n_iter}.')
-            print(f'Sample weights: {self.weights}')
 
             if self.weights.sum() == 0:
                 break
@@ -692,7 +699,6 @@ class IRBoostSH(BoostSH):
 
             # Bandit selection of best modality
             q_mods = (1 - self.gamma) * p_mods / p_mods.sum() + self.gamma / K
-            print(f"q_mods: {q_mods.to_string()}") ##
 
             if mod :
                 selected_mod = mod
@@ -712,20 +718,34 @@ class IRBoostSH(BoostSH):
             else:
                 forecast_np = weak_forecast['forecast']
             target_np = y[mask].values
-
-            # Use this with python version > 3.11
-            if (sys.version_info.major, sys.version_info.minor) >= (3, 12):
-                tmp = 2 * ((forecast_np == target_np).astype(int) - 0.5)
+            
+            if use_cost_sensitive:
+                # Cost-sensitive training: minimize clinical cost
+                # Convert labels to 0-indexed (labels are 1,2,3 → convert to 0,1,2)
+                target_encoded = target_np.astype(int) - 1
+                forecast_encoded = forecast_np.astype(int) - 1
                 
+                # Calculate total cost of predictions
+                costs = cost_matrix[target_encoded, forecast_encoded]
+                total_cost = (self.weights[mask].values * costs).sum()
+                
+                # Normalize cost to create an edge-like metric for consistency with AdaBoost
+                # Perfect predictions have cost 0, so we invert: edge = 1 - normalized_cost
+                max_possible_cost = cost_matrix.max() * len(costs)
+                normalized_cost = total_cost / max_possible_cost if max_possible_cost > 0 else 0
+                edge = 1 - 2 * normalized_cost  # Map [0, max_cost] to [1, -1]
+                
+                print(f'Total weighted cost: {total_cost:.4f}, Normalized cost: {normalized_cost:.4f}, Edge: {edge:.4f}')
             else:
-                tmp = 2 * ((forecast_np == target_np) - 0.5)
-            
-            ## Use this for python version <= 3.11
-            # tmp = 2 * ((weak_forecast['forecast'] == y[mask].values) - .5)
-
-            edge = (self.weights[mask].values * tmp).sum()
-            
-            print(f'Edge: {edge:.4f}')
+                # Standard AdaBoost: maximize accuracy (edge)
+                # Use this with python version > 3.11
+                if (sys.version_info.major, sys.version_info.minor) >= (3, 12):
+                    tmp = 2 * ((forecast_np == target_np).astype(int) - 0.5)
+                else:
+                    tmp = 2 * ((forecast_np == target_np) - 0.5)
+                
+                edge = (self.weights[mask].values * tmp).sum()
+                print(f'Edge: {edge:.4f}')
 
             if (1 - edge) < self.eps:
                 alpha = self.learning_rate * .5 * 10.
@@ -735,7 +755,15 @@ class IRBoostSH(BoostSH):
                 alpha = self.learning_rate * .5 * np.log((1 + edge) / (1 - edge))
 
             # Update weights
-            self.weights[mask] *= np.exp(- alpha * tmp)
+            if use_cost_sensitive:
+                # Weight update based on cost: increase weight for high-cost errors
+                # Normalize costs to [-1, 1] range for compatibility with AdaBoost
+                cost_normalized = 2 * (costs / cost_matrix.max()) - 1
+                self.weights[mask] *= np.exp(- alpha * cost_normalized)
+            else:
+                # Standard AdaBoost weight update
+                tmp = 2 * ((forecast_np == target_np) - 0.5)
+                self.weights[mask] *= np.exp(- alpha * tmp)
             
             # Normalize weights to prevent underflow
             self.weights /= self.weights.sum()

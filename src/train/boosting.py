@@ -3,6 +3,27 @@ from src.models.custom_base_estimators import VeroResNet, NeuralNetworkFitter, C
 from src.models.lutech_models import IRBoostSH
 import torch
 import numpy as np
+import pandas as pd
+
+
+def get_clinical_cost_matrix():
+    """
+    Get the default clinical cost matrix for CN/MCI/AD classification.
+    
+    Returns:
+        cost_matrix: 3x3 numpy array where cost_matrix[i,j] is the cost of
+                    predicting class j when the true class is i
+    """
+    # Default clinical cost matrix for CN/MCI/AD
+    # Rows = true class (CN=0, MCI=1, AD=2)
+    # Cols = predicted class (CN=0, MCI=1, AD=2)
+    cost_matrix = np.array([
+        [0.0, 0.3, 0.9],  # True CN: CN→AD most expensive (0.9)
+        [0.5, 0.0, 0.7],  # True MCI: moderate costs
+        [1.0, 0.8, 0.0]   # True AD: AD→CN CRITICAL (1.0)
+    ])
+    
+    return cost_matrix
 
 
 def training_function(X_mods,y_train,fold,params):
@@ -57,7 +78,20 @@ def training_function(X_mods,y_train,fold,params):
 
     ir_boost = IRBoostSH(base_estimators=base_estimators, n_iter=n_iteration, learning_rate=1.)
 
-    ir_boost.fit(X_mods, y_train, mod)
+    # Check if cost-sensitive training is enabled
+    train_cost_sensitive = params.get('train_cost_sensitive', False)
+    cost_matrix = None
+    
+    if train_cost_sensitive:
+        print("\n[COST-SENSITIVE TRAINING] Enabled - minimizing clinical costs during boosting...")
+        cost_matrix = get_clinical_cost_matrix()
+        print("Clinical Cost Matrix:")
+        print("     CN   MCI   AD")
+        print(f"CN  {cost_matrix[0, 0]:.1f}  {cost_matrix[0, 1]:.1f}  {cost_matrix[0, 2]:.1f}")
+        print(f"MCI {cost_matrix[1, 0]:.1f}  {cost_matrix[1, 1]:.1f}  {cost_matrix[1, 2]:.1f}")
+        print(f"AD  {cost_matrix[2, 0]:.1f}  {cost_matrix[2, 1]:.1f}  {cost_matrix[2, 2]:.1f}\n")
+    
+    ir_boost.fit(X_mods, y_train, mod, sample_weights=None, cost_matrix=cost_matrix)
 
     return ir_boost
 
